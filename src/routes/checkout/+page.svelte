@@ -13,7 +13,10 @@
 
   // El servidor recalcula precios desde la base; acá solo mandamos slug y cantidad.
   let carrito = $derived(JSON.stringify(cart.items.map((i) => ({ slug: i.slug, qty: i.qty }))));
-  let costoEnvio = $derived(envioActivo ? COSTO_ENVIO : 0);
+  // Un pack con envío incluido no suma costo de envío; con productos sueltos se cobra.
+  let costoEnvio = $derived(
+    envioActivo && !cart.lines.every((l) => l.envioIncluido) ? COSTO_ENVIO : 0
+  );
   let totalConEnvio = $derived(cart.total + costoEnvio);
 </script>
 
@@ -182,7 +185,7 @@
           {#if envioActivo}
             <li class="flex justify-between gap-3 text-sm">
               <span class="text-cacao/80">Envío a domicilio</span>
-              <span class="text-cacao">{formatPrice(COSTO_ENVIO)}</span>
+              <span class="text-cacao">{costoEnvio ? formatPrice(costoEnvio) : 'Incluido'}</span>
             </li>
           {/if}
         </ul>

@@ -2,7 +2,7 @@ import { PRODUCT_IMAGES_BUCKET } from '#lib/supabaseClient.js';
 import { adminClient } from '#lib/server/supabaseAdmin.js';
 
 const COLUMNAS =
-  'id, slug, name, category, fragrance, description, price, stock, image_path, featured, active, delivery';
+  'id, slug, name, category, fragrance, description, price, stock, image_path, featured, active, delivery, is_pack, envio_incluido';
 
 /** Todos los productos, incluidos los ocultos. */
 export async function listAllProducts() {
@@ -54,4 +54,56 @@ export async function uploadProductImage(file, slug) {
     .upload(path, file, { contentType: file.type, upsert: false });
   if (error) throw error;
   return path;
+}
+
+/** Productos que pueden formar parte de un pack (no son packs). */
+export async function listComponentesPosibles() {
+  const { data, error } = await adminClient()
+    .from('products')
+    .select('id, name, stock, price')
+    .eq('is_pack', false)
+    .order('name');
+  if (error) throw error;
+  return data;
+}
+
+/** @param {string} packId */
+export async function getPackComponentes(packId) {
+  const { data, error } = await adminClient()
+    .from('pack_items')
+    .select('product_id, quantity')
+    .eq('pack_id', packId);
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Crea o actualiza un pack y reemplaza sus componentes.
+ * @param {{
+ *   id: string | null,
+ *   fields: Record<string, unknown>,
+ *   componentes: { product_id: string, quantity: number }[],
+ * }} opts
+ * @returns {Promise<string>} id del pack
+ */
+export async function guardarPack({ id, fields, componentes }) {
+  const db = adminClient();
+  let packId = id;
+  if (packId) {
+    const { error } = await db.from('products').update(fields).eq('id', packId);
+    if (error) throw error;
+    const { error: errorBorrar } = await db.from('pack_items').delete().eq('pack_id', packId);
+    if (errorBorrar) throw errorBorrar;
+  } else {
+    const { data, error } = await db.from('products').insert(fields).select('id').single();
+    if (error) throw error;
+    packId = data.id;
+  }
+  const { error: errorComp } = await db
+    .from('pack_items')
+    .insert(
+      componentes.map((c) => ({ pack_id: packId, product_id: c.product_id, quantity: c.quantity }))
+    );
+  if (errorComp) throw errorComp;
+  return /** @type {string} */ (packId);
 }

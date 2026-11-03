@@ -15,9 +15,10 @@ export class SinStockError extends Error {}
  *   },
  *   costoEnvio: number,
  *   lineas: { product: { id: string, price: number }, qty: number }[],
+ *   reservas: { product_id: string, qty: number }[],
  * }} opts
  */
-export async function crearPedido({ datos, costoEnvio, lineas }) {
+export async function crearPedido({ datos, costoEnvio, lineas, reservas }) {
   const db = adminClient();
   const productos = lineas.reduce((sum, l) => sum + l.product.price * l.qty, 0);
   const envio = datos.envio;
@@ -61,7 +62,7 @@ export async function crearPedido({ datos, costoEnvio, lineas }) {
   }
 
   const { error: errorStock } = await db.rpc('reservar_stock', {
-    p_items: lineas.map((l) => ({ product_id: l.product.id, qty: l.qty })),
+    p_items: reservas,
   });
   if (errorStock) {
     // El pedido no se creó de verdad: lo borramos junto con sus líneas.

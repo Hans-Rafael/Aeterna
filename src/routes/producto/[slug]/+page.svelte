@@ -46,6 +46,20 @@
     <p class="mt-6 font-serif text-3xl text-cacao">{formatPrice(product.price)}</p>
     <p class="mt-4 leading-relaxed text-cacao/75">{product.description}</p>
 
+    {#if data.incluye?.length}
+      <div class="mt-4 text-sm text-cacao/80">
+        <p class="font-medium">Incluye:</p>
+        <ul class="mt-1 list-disc pl-5">
+          {#each data.incluye as item (item.name)}
+            <li>{item.quantity} × {item.name}</li>
+          {/each}
+        </ul>
+        <p class="mt-2 text-xs text-cacao/60">
+          {product.envioIncluido ? 'Envío incluido.' : 'El envío a domicilio se cobra aparte.'}
+        </p>
+      </div>
+    {/if}
+
     <div class="mt-8 flex flex-wrap items-center gap-4">
       <div class="flex items-center rounded-full border border-cacao/20">
         <button

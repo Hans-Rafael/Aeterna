@@ -34,7 +34,6 @@ export const actions = {
       return fail(400, { error: 'Revisá nombre, email y teléfono.', ...datos, envio: undefined });
     }
 
-    let costoEnvio = 0;
     if (entrega === 'envio') {
       const envio = {
         codigoPostal: texto(form.get('codigoPostal')),
@@ -56,7 +55,6 @@ export const actions = {
         return fail(400, { error: 'Elegí una provincia válida.', ...datos });
       }
       datos.envio = envio;
-      costoEnvio = COSTO_ENVIO;
     }
 
     // El carrito llega como lista de { slug, qty }. El precio NUNCA viene del navegador.
@@ -101,12 +99,29 @@ export const actions = {
       });
     }
 
+    // Envío: se cobra salvo que todos los productos del carrito lo tengan incluido.
+    const costoEnvio =
+      entrega === 'envio' && !lineas.every((l) => l.product.envioIncluido) ? COSTO_ENVIO : 0;
+
+    // Stock a descontar: un pack descuenta las unidades de sus componentes.
+    /** @type {{ product_id: string, qty: number }[]} */
+    const reservas = [];
+    for (const l of lineas) {
+      if (l.product.isPack) {
+        for (const c of l.product.componentes ?? []) {
+          reservas.push({ product_id: c.product_id, qty: c.quantity * l.qty });
+        }
+      } else {
+        reservas.push({ product_id: l.product.id, qty: l.qty });
+      }
+    }
+
     // Liberamos el stock de pedidos viejos que nunca se pagaron.
     await vencerPedidosViejos(MINUTOS_RESERVA);
 
     let pedido;
     try {
-      pedido = await crearPedido({ datos, costoEnvio, lineas });
+      pedido = await crearPedido({ datos, costoEnvio, lineas, reservas });
     } catch (err) {
       if (err instanceof SinStockError) {
         return fail(409, {

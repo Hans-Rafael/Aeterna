@@ -1,15 +1,16 @@
 <script>
+  import { page } from '$app/state';
   import { formatPrice } from '#lib/format.js';
 
   let { data } = $props();
   /** @type {Record<string, string>} */
-  const categorias = { jabon: 'Jabón', vela: 'Vela' };
+  const categorias = { jabon: 'Jabón', vela: 'Vela', pack: 'Pack' };
   /** Umbral para avisar que el stock está bajo. */
   const UMBRAL_ALERTA = 3;
   /** @param {number} stock */
   const estadoStock = (stock) => (stock <= 0 ? 'sin' : stock <= UMBRAL_ALERTA ? 'bajo' : 'ok');
   let enAlerta = $derived(
-    data.products.filter((/** @type {any} */ p) => estadoStock(p.stock) !== 'ok')
+    data.products.filter((/** @type {any} */ p) => !p.is_pack && estadoStock(p.stock) !== 'ok')
   );
 </script>
 
@@ -25,6 +26,11 @@
         href="/tienda"
         class="rounded-full border border-cacao/20 px-4 py-2 hover:border-rosa-oscuro">Ver tienda</a
       >
+      <a
+        href="/admin/packs/nuevo"
+        class="rounded-full border border-cacao/20 px-4 py-2 hover:border-rosa-oscuro"
+        >+ Nuevo pack</a
+      >
       <form method="POST" action="?/salir">
         <button class="rounded-full bg-cacao px-4 py-2 text-crema hover:bg-rosa-oscuro"
           >Salir</button
@@ -32,6 +38,10 @@
       </form>
     </div>
   </div>
+
+  {#if page.url.searchParams.has('pack')}
+    <p class="mt-6 rounded-2xl bg-salvia/20 p-3 text-sm">Pack creado.</p>
+  {/if}
 
   {#if enAlerta.length > 0}
     <div class="mt-6 rounded-2xl bg-rosa/30 p-4 text-sm text-cacao">
@@ -65,20 +75,25 @@
             <td>{categorias[p.category]}</td>
             <td>{formatPrice(p.price)}</td>
             <td>
-              <span
-                class="rounded-full px-2 py-0.5 text-xs {estadoStock(p.stock) === 'ok'
-                  ? 'bg-salvia/20 text-cacao'
-                  : estadoStock(p.stock) === 'bajo'
-                    ? 'bg-vainilla text-cacao'
-                    : 'bg-rosa text-cacao'}"
-              >
-                {p.stock}
-              </span>
+              {#if p.is_pack}
+                <span class="text-xs text-cacao/60">según componentes</span>
+              {:else}
+                <span
+                  class="rounded-full px-2 py-0.5 text-xs {estadoStock(p.stock) === 'ok'
+                    ? 'bg-salvia/20 text-cacao'
+                    : estadoStock(p.stock) === 'bajo'
+                      ? 'bg-vainilla text-cacao'
+                      : 'bg-rosa text-cacao'}"
+                >
+                  {p.stock}
+                </span>
+              {/if}
             </td>
             <td>{p.active ? 'Visible' : 'Oculto'}</td>
             <td class="pr-4 text-right">
-              <a href="/admin/producto/{p.id}" class="text-rosa-oscuro underline underline-offset-4"
-                >Editar</a
+              <a
+                href={p.is_pack ? `/admin/packs/${p.id}` : `/admin/producto/${p.id}`}
+                class="text-rosa-oscuro underline underline-offset-4">Editar</a
               >
             </td>
           </tr>
