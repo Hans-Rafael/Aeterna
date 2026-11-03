@@ -1,5 +1,6 @@
 <script>
   import { formatPrice } from '#lib/format.js';
+  import { onImageError } from '#lib/images.js';
   import { categories } from '#lib/products.js';
 
   let { product } = $props();
@@ -11,6 +12,7 @@
       src={product.image}
       alt={product.name}
       loading="lazy"
+      onerror={onImageError}
       class="h-full w-full object-cover transition duration-700 group-hover:scale-105"
     />
   </div>
