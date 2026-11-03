@@ -1,8 +1,8 @@
 <script>
   import ProductCard from '#lib/components/ProductCard.svelte';
-  import { products } from '#lib/products.js';
 
-  const featured = products.filter((p) => p.featured);
+  let { data } = $props();
+  let featured = $derived(data.products.filter((p) => p.featured));
 </script>
 
 <!-- Hero -->

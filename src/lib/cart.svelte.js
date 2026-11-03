@@ -1,5 +1,3 @@
-import { getProduct } from './products.js';
-
 const STORAGE_KEY = 'aeterna-carrito';
 
 /** @typedef {{ slug: string, qty: number }} CartItem */
@@ -11,7 +9,7 @@ function loadItems() {
   try {
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter((i) => getProduct(i.slug) && Number.isInteger(i.qty) && i.qty > 0);
+    return parsed.filter((i) => typeof i.slug === 'string' && Number.isInteger(i.qty) && i.qty > 0);
   } catch {
     return [];
   }
@@ -21,8 +19,16 @@ class Cart {
   /** @type {CartItem[]} */
   items = $state([]);
 
+  /** Catálogo actual (lo carga el layout). @type {import('./products.js').Product[]} */
+  catalog = $state([]);
+
   constructor() {
     this.items = loadItems();
+  }
+
+  /** @param {import('./products.js').Product[]} products */
+  setCatalog(products) {
+    this.catalog = products;
   }
 
   /** Líneas del carrito con los datos del producto (precio siempre actual). @returns {CartLine[]} */
@@ -30,7 +36,7 @@ class Cart {
     /** @type {CartLine[]} */
     const out = [];
     for (const item of this.items) {
-      const product = getProduct(item.slug);
+      const product = this.catalog.find((p) => p.slug === item.slug);
       if (product) out.push({ ...product, qty: item.qty });
     }
     return out;

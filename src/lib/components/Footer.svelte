@@ -4,6 +4,9 @@
   >
     <p class="font-serif text-xl tracking-[0.3em] text-cacao">AETERNA</p>
     <p class="italic">jabones y velas hechos a mano, con amor</p>
-    <p class="mt-4 text-xs">© {new Date().getFullYear()} Aeterna · Todos los derechos reservados</p>
+    <p class="mt-4 text-xs">
+      © {new Date().getFullYear()} Aeterna · Todos los derechos reservados ·
+      <a href="/admin" class="underline underline-offset-4 hover:text-rosa-oscuro">Admin</a>
+    </p>
   </div>
 </footer>
