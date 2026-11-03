@@ -2,15 +2,12 @@
   import { cart } from '#lib/cart.svelte.js';
   import { formatPrice } from '#lib/format.js';
 
+  /** @type {{ form: any }} */
+  let { form } = $props();
   let entrega = $state('retiro');
-  let aviso = $state('');
 
-  // Mockup: el pago con Mercado Pago se conecta en el próximo paso.
-  /** @param {SubmitEvent} event */
-  function pagar(event) {
-    event.preventDefault();
-    aviso = 'Pago con Mercado Pago: pendiente de conectar (próximo paso).';
-  }
+  // El servidor recalcula precios desde la base; acá solo mandamos slug y cantidad.
+  let carrito = $derived(JSON.stringify(cart.items.map((i) => ({ slug: i.slug, qty: i.qty }))));
 </script>
 
 <svelte:head>
@@ -32,20 +29,42 @@
     </div>
   {:else}
     <div class="mt-12 grid gap-10 md:grid-cols-5">
-      <form class="space-y-5 md:col-span-3" onsubmit={pagar}>
+      <form method="POST" class="space-y-5 md:col-span-3">
+        <input type="hidden" name="carrito" value={carrito} />
+
         <h2 class="font-serif text-xl text-cacao">Tus datos</h2>
 
         <label class="block text-sm">
           <span class="text-cacao/70">Nombre y apellido</span>
-          <input required name="nombre" class="field" autocomplete="name" />
+          <input
+            required
+            name="nombre"
+            value={form?.nombre ?? ''}
+            class="field"
+            autocomplete="name"
+          />
         </label>
         <label class="block text-sm">
           <span class="text-cacao/70">Email</span>
-          <input required type="email" name="email" class="field" autocomplete="email" />
+          <input
+            required
+            type="email"
+            name="email"
+            value={form?.email ?? ''}
+            class="field"
+            autocomplete="email"
+          />
         </label>
         <label class="block text-sm">
           <span class="text-cacao/70">Teléfono</span>
-          <input required type="tel" name="telefono" class="field" autocomplete="tel" />
+          <input
+            required
+            type="tel"
+            name="telefono"
+            value={form?.telefono ?? ''}
+            class="field"
+            autocomplete="tel"
+          />
         </label>
 
         <fieldset class="space-y-3 pt-2">
@@ -74,8 +93,8 @@
           Pagar con Mercado Pago
         </button>
 
-        {#if aviso}
-          <p class="rounded-2xl bg-vainilla/40 p-4 text-sm text-cacao">{aviso}</p>
+        {#if form?.error}
+          <p class="rounded-2xl bg-rosa/30 p-4 text-sm text-cacao">{form.error}</p>
         {/if}
       </form>
 
