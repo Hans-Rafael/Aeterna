@@ -1,13 +1,17 @@
 <script>
+  import { untrack } from 'svelte';
   import { cart } from '#lib/cart.svelte.js';
   import { formatPrice } from '#lib/format.js';
+  import { COSTO_ENVIO, PROVINCIAS } from '#lib/envio.js';
 
   /** @type {{ form: any }} */
   let { form } = $props();
-  let entrega = $state('retiro');
+  let entrega = $state(untrack(() => form?.entrega ?? 'retiro'));
 
   // El servidor recalcula precios desde la base; acá solo mandamos slug y cantidad.
   let carrito = $derived(JSON.stringify(cart.items.map((i) => ({ slug: i.slug, qty: i.qty }))));
+  let costoEnvio = $derived(entrega === 'envio' ? COSTO_ENVIO : 0);
+  let totalConEnvio = $derived(cart.total + costoEnvio);
 </script>
 
 <svelte:head>
@@ -80,11 +84,66 @@
         </fieldset>
 
         {#if entrega === 'envio'}
-          <label class="block text-sm">
-            <span class="text-cacao/70">Dirección</span>
-            <input required name="direccion" class="field" autocomplete="street-address" />
-          </label>
+          <div class="space-y-4 rounded-2xl bg-vainilla/20 p-5">
+            <div class="grid grid-cols-2 gap-4">
+              <label class="block text-sm">
+                <span class="text-cacao/70">Código postal</span>
+                <input
+                  required
+                  name="codigoPostal"
+                  value={form?.codigoPostal ?? ''}
+                  class="field"
+                  autocomplete="postal-code"
+                />
+              </label>
+              <label class="block text-sm">
+                <span class="text-cacao/70">Provincia</span>
+                <select required name="provincia" class="field">
+                  <option value="">Elegí…</option>
+                  {#each PROVINCIAS as p (p)}
+                    <option value={p} selected={form?.provincia === p}>{p}</option>
+                  {/each}
+                </select>
+              </label>
+            </div>
+            <label class="block text-sm">
+              <span class="text-cacao/70">Localidad</span>
+              <input
+                required
+                name="localidad"
+                value={form?.localidad ?? ''}
+                class="field"
+                autocomplete="address-level2"
+              />
+            </label>
+            <div class="grid grid-cols-3 gap-4">
+              <label class="col-span-2 block text-sm">
+                <span class="text-cacao/70">Calle</span>
+                <input
+                  required
+                  name="calle"
+                  value={form?.calle ?? ''}
+                  class="field"
+                  autocomplete="address-line1"
+                />
+              </label>
+              <label class="block text-sm">
+                <span class="text-cacao/70">Número</span>
+                <input required name="numero" value={form?.numero ?? ''} class="field" />
+              </label>
+            </div>
+            <label class="block text-sm">
+              <span class="text-cacao/70">Piso y depto (opcional)</span>
+              <input name="pisoDepto" value={form?.pisoDepto ?? ''} class="field" />
+            </label>
+            <label class="block text-sm">
+              <span class="text-cacao/70">Aclaraciones para el envío (opcional)</span>
+              <textarea name="notas" rows="2" class="field">{form?.notas ?? ''}</textarea>
+            </label>
+          </div>
         {/if}
+
+        <input type="hidden" name="entrega" value={entrega} />
 
         <button
           type="submit"
@@ -107,10 +166,16 @@
               <span class="text-cacao">{formatPrice(line.price * line.qty)}</span>
             </li>
           {/each}
+          {#if entrega === 'envio'}
+            <li class="flex justify-between gap-3 text-sm">
+              <span class="text-cacao/80">Envío a domicilio</span>
+              <span class="text-cacao">{formatPrice(COSTO_ENVIO)}</span>
+            </li>
+          {/if}
         </ul>
         <div class="mt-6 flex justify-between border-t border-cacao/10 pt-4">
           <span class="text-cacao/70">Total</span>
-          <span class="font-serif text-2xl text-cacao">{formatPrice(cart.total)}</span>
+          <span class="font-serif text-2xl text-cacao">{formatPrice(totalConEnvio)}</span>
         </div>
         <a
           href="/carrito"
