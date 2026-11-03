@@ -4,6 +4,13 @@
   let { data } = $props();
   /** @type {Record<string, string>} */
   const categorias = { jabon: 'Jabón', vela: 'Vela' };
+  /** Umbral para avisar que el stock está bajo. */
+  const UMBRAL_ALERTA = 3;
+  /** @param {number} stock */
+  const estadoStock = (stock) => (stock <= 0 ? 'sin' : stock <= UMBRAL_ALERTA ? 'bajo' : 'ok');
+  let enAlerta = $derived(
+    data.products.filter((/** @type {any} */ p) => estadoStock(p.stock) !== 'ok')
+  );
 </script>
 
 <svelte:head>
@@ -26,6 +33,19 @@
     </div>
   </div>
 
+  {#if enAlerta.length > 0}
+    <div class="mt-6 rounded-2xl bg-rosa/30 p-4 text-sm text-cacao">
+      <p class="font-medium">Stock para reponer ({enAlerta.length})</p>
+      <ul class="mt-2 list-disc space-y-1 pl-5">
+        {#each enAlerta as p (p.id)}
+          <li>
+            {p.name}: {p.stock <= 0 ? 'sin stock' : `quedan ${p.stock}`}
+          </li>
+        {/each}
+      </ul>
+    </div>
+  {/if}
+
   <div class="mt-8 overflow-x-auto rounded-2xl border border-cacao/10 bg-white">
     <table class="w-full text-sm">
       <thead class="bg-vainilla/30 text-left text-cacao/70">
@@ -33,6 +53,7 @@
           <th class="px-4 py-3 font-normal">Producto</th>
           <th class="font-normal">Categoría</th>
           <th class="font-normal">Precio</th>
+          <th class="font-normal">Stock</th>
           <th class="font-normal">Estado</th>
           <th></th>
         </tr>
@@ -43,6 +64,17 @@
             <td class="px-4 py-3 font-serif text-base">{p.name}</td>
             <td>{categorias[p.category]}</td>
             <td>{formatPrice(p.price)}</td>
+            <td>
+              <span
+                class="rounded-full px-2 py-0.5 text-xs {estadoStock(p.stock) === 'ok'
+                  ? 'bg-salvia/20 text-cacao'
+                  : estadoStock(p.stock) === 'bajo'
+                    ? 'bg-vainilla text-cacao'
+                    : 'bg-rosa text-cacao'}"
+              >
+                {p.stock}
+              </span>
+            </td>
             <td>{p.active ? 'Visible' : 'Oculto'}</td>
             <td class="pr-4 text-right">
               <a href="/admin/producto/{p.id}" class="text-rosa-oscuro underline underline-offset-4"
@@ -51,7 +83,7 @@
             </td>
           </tr>
         {:else}
-          <tr><td colspan="5" class="px-4 py-6 text-center text-cacao/60">No hay productos.</td></tr
+          <tr><td colspan="6" class="px-4 py-6 text-center text-cacao/60">No hay productos.</td></tr
           >
         {/each}
       </tbody>
