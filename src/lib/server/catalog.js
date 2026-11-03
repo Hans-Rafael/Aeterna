@@ -13,7 +13,7 @@ export async function getActiveProducts() {
 
   const { data, error } = await db
     .from('products')
-    .select('slug, name, category, fragrance, description, price, image_path, featured')
+    .select('id, slug, name, category, fragrance, description, price, image_path, featured')
     .eq('active', true)
     .order('created_at');
 
@@ -23,6 +23,7 @@ export async function getActiveProducts() {
   }
 
   return data.map((row) => ({
+    id: row.id,
     slug: row.slug,
     name: row.name,
     category: row.category,
