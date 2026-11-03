@@ -1,9 +1,9 @@
 import { error } from '@sveltejs/kit';
-import { getProduct, products } from '#lib/products.js';
 
 /** @type {import('./$types').PageLoad} */
-export function load({ params }) {
-  const product = getProduct(params.slug);
+export async function load({ params, parent }) {
+  const { products } = await parent();
+  const product = products.find((p) => p.slug === params.slug);
   if (!product) error(404, 'Producto no encontrado');
 
   const related = products

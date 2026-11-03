@@ -2,7 +2,9 @@
   import { page } from '$app/state';
   import ProductCard from '#lib/components/ProductCard.svelte';
   import { paginate } from '#lib/pagination.js';
-  import { categories, products } from '#lib/products.js';
+  import { categories } from '#lib/products.js';
+
+  let { data } = $props();
 
   const filters = [
     { value: null, label: 'Todo' },
@@ -12,7 +14,9 @@
 
   let categoria = $derived(page.url.searchParams.get('categoria'));
   let filtrados = $derived(
-    categoria && categories[categoria] ? products.filter((p) => p.category === categoria) : products
+    categoria && categories[categoria]
+      ? data.products.filter((p) => p.category === categoria)
+      : data.products
   );
   let pag = $derived(paginate(filtrados, page.url.searchParams.get('pagina')));
   let titulo = $derived(
