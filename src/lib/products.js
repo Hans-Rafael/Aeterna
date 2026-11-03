@@ -13,6 +13,7 @@
  * @property {number} price
  * @property {string} image
  * @property {boolean} [featured]
+ * @property {boolean} [delivery]
  */
 
 /** @type {Product[]} */
