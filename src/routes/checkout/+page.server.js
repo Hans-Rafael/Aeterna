@@ -75,6 +75,6 @@ export const actions = {
     });
 
     await guardarPreferencia(pedido.id, String(preferencia.id));
-    redirect(303, String(preferencia.init_point));
+    redirect(303, String(preferencia.init_point), { external: true });
   },
 };
