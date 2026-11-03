@@ -2,6 +2,7 @@
   import { cart } from '#lib/cart.svelte.js';
   import ProductCard from '#lib/components/ProductCard.svelte';
   import { formatPrice } from '#lib/format.js';
+  import { onImageError } from '#lib/images.js';
   import { categories } from '#lib/products.js';
 
   let { data } = $props();
@@ -24,7 +25,12 @@
 
 <section class="mx-auto grid max-w-6xl gap-10 px-4 pt-10 md:grid-cols-2 md:pt-16">
   <div class="overflow-hidden rounded-3xl bg-vainilla/30 shadow-sm">
-    <img src={product.image} alt={product.name} class="h-full w-full object-cover" />
+    <img
+      src={product.image}
+      alt={product.name}
+      onerror={onImageError}
+      class="h-full w-full object-cover"
+    />
   </div>
 
   <div class="flex flex-col justify-center">

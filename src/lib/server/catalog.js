@@ -1,5 +1,6 @@
 import { PRODUCT_IMAGES_BUCKET, supabase } from '#lib/supabaseClient.js';
 import { products as sampleProducts } from '#lib/products.js';
+import { IMAGE_FALLBACK } from '#lib/images.js';
 
 /**
  * Productos activos para la tienda.
@@ -29,6 +30,8 @@ export async function getActiveProducts() {
     description: row.description,
     price: row.price,
     featured: row.featured,
-    image: db.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(row.image_path).data.publicUrl,
+    image: row.image_path
+      ? db.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(row.image_path).data.publicUrl
+      : IMAGE_FALLBACK,
   }));
 }

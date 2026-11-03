@@ -1,5 +1,5 @@
 /** Máximo de productos por página. */
-export const PAGE_SIZE = 12;
+export const PAGE_SIZE = 8;
 
 /**
  * Divide una lista en páginas. Si `page` no es válido, cae en la primera página

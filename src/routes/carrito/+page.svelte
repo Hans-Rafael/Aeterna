@@ -1,6 +1,7 @@
 <script>
   import { cart } from '#lib/cart.svelte.js';
   import { formatPrice } from '#lib/format.js';
+  import { onImageError } from '#lib/images.js';
 </script>
 
 <svelte:head>
@@ -28,7 +29,12 @@
             href="/producto/{line.slug}"
             class="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-vainilla/30"
           >
-            <img src={line.image} alt={line.name} class="h-full w-full object-cover" />
+            <img
+              src={line.image}
+              alt={line.name}
+              onerror={onImageError}
+              class="h-full w-full object-cover"
+            />
           </a>
 
           <div class="min-w-0 flex-1">

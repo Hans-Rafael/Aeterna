@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Aeterna, foto no disponible">
+  <rect width="400" height="400" fill="#f5ead2"/>
+  <circle cx="200" cy="190" r="120" fill="none" stroke="#d9a9ad" stroke-width="2"/>
+  <circle cx="200" cy="190" r="104" fill="none" stroke="#d9a9ad" stroke-width="1" stroke-dasharray="4 6"/>
+  <text x="200" y="190" text-anchor="middle" font-family="Georgia, serif" font-size="34" letter-spacing="8" fill="#4a3b35">AETERNA</text>
+  <text x="200" y="232" text-anchor="middle" font-family="Georgia, serif" font-size="15" font-style="italic" fill="#a8646d">foto no disponible</text>
+</svg>
