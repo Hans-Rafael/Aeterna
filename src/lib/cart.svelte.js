@@ -1,11 +1,17 @@
+import { browser } from '$app/environment';
+
 const STORAGE_KEY = 'aeterna-carrito';
 
 /** @typedef {{ slug: string, qty: number }} CartItem */
 /** @typedef {import('./products.js').Product & { qty: number }} CartLine */
 
-/** Lee el carrito guardado en el navegador. Nunca lanza error. @returns {CartItem[]} */
+/**
+ * Lee el carrito guardado en el navegador. Nunca lanza error.
+ * En el servidor no hay localStorage, así que no se toca.
+ * @returns {CartItem[]}
+ */
 function loadItems() {
-  if (typeof localStorage === 'undefined') return [];
+  if (!browser) return [];
   try {
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
     if (!Array.isArray(parsed)) return [];
@@ -78,7 +84,7 @@ class Cart {
   }
 
   #save() {
-    if (typeof localStorage === 'undefined') return;
+    if (!browser) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.items));
     } catch {
