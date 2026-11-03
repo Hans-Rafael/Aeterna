@@ -1,3 +1,5 @@
 engineStrict: true
 allowBuilds:
   esbuild: true
+# Supply-chain guard: no instalar versiones publicadas hace menos de 24 h (en minutos).
+minimumReleaseAge: 1440
