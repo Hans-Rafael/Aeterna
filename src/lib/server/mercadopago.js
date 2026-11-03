@@ -14,9 +14,10 @@ function cliente() {
  *   items: { title: string, quantity: number, unit_price: number }[],
  *   baseUrl: string,
  *   notificationUrl: string | null,
+ *   payer: { name: string, email: string },
  * }} opts
  */
-export async function crearPreferencia({ pedidoId, items, baseUrl, notificationUrl }) {
+export async function crearPreferencia({ pedidoId, items, baseUrl, notificationUrl, payer }) {
   const conRetorno = baseUrl.startsWith('https://');
   const retorno = `${baseUrl}/checkout/resultado?pedido=${pedidoId}`;
 
@@ -25,6 +26,7 @@ export async function crearPreferencia({ pedidoId, items, baseUrl, notificationU
       body: {
         items: items.map((i) => ({ ...i, currency_id: 'ARS' })),
         external_reference: pedidoId,
+        payer: { name: payer.name, email: payer.email },
         ...(conRetorno
           ? {
               back_urls: { success: retorno, failure: retorno, pending: retorno },

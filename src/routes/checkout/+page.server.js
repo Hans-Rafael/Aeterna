@@ -72,6 +72,7 @@ export const actions = {
       })),
       baseUrl: url.origin,
       notificationUrl: esLocal ? null : `${url.origin}/api/mercadopago/webhook`,
+      payer: { name: datos.nombre, email: datos.email },
     });
 
     await guardarPreferencia(pedido.id, String(preferencia.id));
