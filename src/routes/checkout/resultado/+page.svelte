@@ -1,12 +1,14 @@
 <script>
+  import { onMount } from 'svelte';
   import { cart } from '#lib/cart.svelte.js';
 
   let { data } = $props();
   let estado = $derived(data.pedido?.status ?? null);
 
-  // Pago confirmado: vaciamos el carrito de este navegador.
-  $effect(() => {
-    if (estado === 'pagado') cart.clear();
+  // Pago confirmado: vaciamos el carrito de este navegador una sola vez.
+  // (Con $effect se genera un bucle, porque clear() lee y escribe el mismo estado.)
+  onMount(() => {
+    if (data.pedido?.status === 'pagado') cart.clear();
   });
 
   /** @type {Record<string, { titulo: string, texto: string }>} */
