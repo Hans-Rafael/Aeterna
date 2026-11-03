@@ -8,6 +8,7 @@ function cliente() {
 
 /**
  * Crea la preferencia de Checkout Pro y devuelve su `init_point` (URL de pago).
+ * Mercado Pago solo acepta URLs de retorno https, así que en localhost no las enviamos.
  * @param {{
  *   pedidoId: string,
  *   items: { title: string, quantity: number, unit_price: number }[],
@@ -16,17 +17,20 @@ function cliente() {
  * }} opts
  */
 export async function crearPreferencia({ pedidoId, items, baseUrl, notificationUrl }) {
+  const conRetorno = baseUrl.startsWith('https://');
+  const retorno = `${baseUrl}/checkout/resultado?pedido=${pedidoId}`;
+
   const preferencia = await new Preference(cliente()).create(
     /** @type {any} */ ({
       body: {
         items: items.map((i) => ({ ...i, currency_id: 'ARS' })),
         external_reference: pedidoId,
-        back_urls: {
-          success: `${baseUrl}/checkout/resultado?pedido=${pedidoId}`,
-          failure: `${baseUrl}/checkout/resultado?pedido=${pedidoId}`,
-          pending: `${baseUrl}/checkout/resultado?pedido=${pedidoId}`,
-        },
-        auto_return: 'approved',
+        ...(conRetorno
+          ? {
+              back_urls: { success: retorno, failure: retorno, pending: retorno },
+              auto_return: 'approved',
+            }
+          : {}),
         ...(notificationUrl ? { notification_url: notificationUrl } : {}),
       },
     })
