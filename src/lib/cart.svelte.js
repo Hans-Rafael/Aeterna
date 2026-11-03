@@ -1,6 +1,6 @@
-import { browser } from '$app/environment';
-
 const STORAGE_KEY = 'aeterna-carrito';
+/** true solo en el navegador (en el servidor no hay localStorage). */
+const browser = typeof window !== 'undefined';
 
 /** @typedef {{ slug: string, qty: number }} CartItem */
 /** @typedef {import('./products.js').Product & { qty: number }} CartLine */
