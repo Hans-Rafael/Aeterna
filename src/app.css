@@ -1,3 +1,19 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@theme {
+  --color-crema: #fbf7f1;
+  --color-cacao: #4a3b35;
+  --color-rosa: #d9a9ad;
+  --color-rosa-oscuro: #a8646d;
+  --color-lavanda: #8c7fb5;
+  --color-salvia: #8a9a7b;
+  --color-vainilla: #ebd9a8;
+
+  --font-serif: 'Lora', Georgia, serif;
+}
+
+@layer base {
+  body {
+    @apply bg-crema font-sans text-cacao antialiased;
+  }
+}
