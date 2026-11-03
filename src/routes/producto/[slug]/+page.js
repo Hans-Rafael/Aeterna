@@ -10,5 +10,11 @@ export async function load({ params, parent }) {
     .filter((p) => p.category === product.category && p.slug !== product.slug)
     .slice(0, 4);
 
-  return { product, related };
+  // Qué incluye un pack, con los nombres de sus productos.
+  const incluye = (product.componentes ?? []).map((c) => ({
+    name: /** @type {any[]} */ (products).find((p) => p.id === c.product_id)?.name ?? 'Producto',
+    quantity: c.quantity,
+  }));
+
+  return { product, related, incluye };
 }

@@ -7,12 +7,17 @@
  * @typedef {Object} Product
  * @property {string} slug
  * @property {string} name
- * @property {'jabon' | 'vela'} category
+ * @property {'jabon' | 'vela' | 'pack'} category
  * @property {string} fragrance
  * @property {string} description
  * @property {number} price
  * @property {string} image
  * @property {boolean} [featured]
+ * @property {boolean} [delivery]
+ * @property {number} [stock]
+ * @property {boolean} [isPack]
+ * @property {boolean} [envioIncluido]
+ * @property {{ product_id: string, quantity: number }[]} [componentes]
  */
 
 /** @type {Product[]} */
@@ -135,6 +140,7 @@ export const products = [
 export const categories = {
   jabon: { label: 'Jabones', singular: 'Jabón' },
   vela: { label: 'Velas', singular: 'Vela' },
+  pack: { label: 'Packs', singular: 'Pack' },
 };
 
 /** @param {string} slug @returns {Product | undefined} */

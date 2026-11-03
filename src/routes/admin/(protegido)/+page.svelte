@@ -1,9 +1,17 @@
 <script>
+  import { page } from '$app/state';
   import { formatPrice } from '#lib/format.js';
 
   let { data } = $props();
   /** @type {Record<string, string>} */
-  const categorias = { jabon: 'Jabón', vela: 'Vela' };
+  const categorias = { jabon: 'Jabón', vela: 'Vela', pack: 'Pack' };
+  /** Umbral para avisar que el stock está bajo. */
+  const UMBRAL_ALERTA = 3;
+  /** @param {number} stock */
+  const estadoStock = (stock) => (stock <= 0 ? 'sin' : stock <= UMBRAL_ALERTA ? 'bajo' : 'ok');
+  let enAlerta = $derived(
+    data.products.filter((/** @type {any} */ p) => !p.is_pack && estadoStock(p.stock) !== 'ok')
+  );
 </script>
 
 <svelte:head>
@@ -18,6 +26,11 @@
         href="/tienda"
         class="rounded-full border border-cacao/20 px-4 py-2 hover:border-rosa-oscuro">Ver tienda</a
       >
+      <a
+        href="/admin/packs/nuevo"
+        class="rounded-full border border-cacao/20 px-4 py-2 hover:border-rosa-oscuro"
+        >+ Nuevo pack</a
+      >
       <form method="POST" action="?/salir">
         <button class="rounded-full bg-cacao px-4 py-2 text-crema hover:bg-rosa-oscuro"
           >Salir</button
@@ -26,6 +39,23 @@
     </div>
   </div>
 
+  {#if page.url.searchParams.has('pack')}
+    <p class="mt-6 rounded-2xl bg-salvia/20 p-3 text-sm">Pack creado.</p>
+  {/if}
+
+  {#if enAlerta.length > 0}
+    <div class="mt-6 rounded-2xl bg-rosa/30 p-4 text-sm text-cacao">
+      <p class="font-medium">Stock para reponer ({enAlerta.length})</p>
+      <ul class="mt-2 list-disc space-y-1 pl-5">
+        {#each enAlerta as p (p.id)}
+          <li>
+            {p.name}: {p.stock <= 0 ? 'sin stock' : `quedan ${p.stock}`}
+          </li>
+        {/each}
+      </ul>
+    </div>
+  {/if}
+
   <div class="mt-8 overflow-x-auto rounded-2xl border border-cacao/10 bg-white">
     <table class="w-full text-sm">
       <thead class="bg-vainilla/30 text-left text-cacao/70">
@@ -33,6 +63,7 @@
           <th class="px-4 py-3 font-normal">Producto</th>
           <th class="font-normal">Categoría</th>
           <th class="font-normal">Precio</th>
+          <th class="font-normal">Stock</th>
           <th class="font-normal">Estado</th>
           <th></th>
         </tr>
@@ -43,15 +74,31 @@
             <td class="px-4 py-3 font-serif text-base">{p.name}</td>
             <td>{categorias[p.category]}</td>
             <td>{formatPrice(p.price)}</td>
+            <td>
+              {#if p.is_pack}
+                <span class="text-xs text-cacao/60">según componentes</span>
+              {:else}
+                <span
+                  class="rounded-full px-2 py-0.5 text-xs {estadoStock(p.stock) === 'ok'
+                    ? 'bg-salvia/20 text-cacao'
+                    : estadoStock(p.stock) === 'bajo'
+                      ? 'bg-vainilla text-cacao'
+                      : 'bg-rosa text-cacao'}"
+                >
+                  {p.stock}
+                </span>
+              {/if}
+            </td>
             <td>{p.active ? 'Visible' : 'Oculto'}</td>
             <td class="pr-4 text-right">
-              <a href="/admin/producto/{p.id}" class="text-rosa-oscuro underline underline-offset-4"
-                >Editar</a
+              <a
+                href={p.is_pack ? `/admin/packs/${p.id}` : `/admin/producto/${p.id}`}
+                class="text-rosa-oscuro underline underline-offset-4">Editar</a
               >
             </td>
           </tr>
         {:else}
-          <tr><td colspan="5" class="px-4 py-6 text-center text-cacao/60">No hay productos.</td></tr
+          <tr><td colspan="6" class="px-4 py-6 text-center text-cacao/60">No hay productos.</td></tr
           >
         {/each}
       </tbody>

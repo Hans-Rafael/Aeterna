@@ -12,6 +12,7 @@
     { value: null, label: 'Todo' },
     { value: 'jabon', label: categories.jabon.label },
     { value: 'vela', label: categories.vela.label },
+    { value: 'pack', label: categories.pack.label },
   ];
 
   let categoriaPedida = $derived(page.url.searchParams.get('categoria') ?? '');
