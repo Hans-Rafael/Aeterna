@@ -1,4 +1,5 @@
 import { PRODUCT_IMAGES_BUCKET } from '#lib/supabaseClient.js';
+import { IMAGE_FALLBACK } from '#lib/images.js';
 import { adminClient } from '#lib/server/supabaseAdmin.js';
 
 const COLUMNAS =
@@ -36,6 +37,7 @@ export async function updateProduct(id, fields) {
  * @param {string} path
  */
 export function publicImageUrl(path) {
+  if (!path) return IMAGE_FALLBACK;
   return adminClient().storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(path).data.publicUrl;
 }
 
