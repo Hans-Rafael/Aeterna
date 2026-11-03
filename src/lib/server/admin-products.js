@@ -2,7 +2,7 @@ import { PRODUCT_IMAGES_BUCKET } from '#lib/supabaseClient.js';
 import { adminClient } from '#lib/server/supabaseAdmin.js';
 
 const COLUMNAS =
-  'id, slug, name, category, fragrance, description, price, stock, image_path, featured, active';
+  'id, slug, name, category, fragrance, description, price, stock, image_path, featured, active, delivery';
 
 /** Todos los productos, incluidos los ocultos. */
 export async function listAllProducts() {

@@ -45,6 +45,7 @@ export const actions = {
       stock,
       featured: form.get('featured') === 'on',
       active: form.get('active') === 'on',
+      delivery: form.get('delivery') === 'on',
     };
 
     const foto = form.get('foto');

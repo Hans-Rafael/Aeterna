@@ -7,10 +7,13 @@
   /** @type {{ form: any }} */
   let { form } = $props();
   let entrega = $state(untrack(() => form?.entrega ?? 'retiro'));
+  // Si algún producto no admite envío, solo se puede retirar en persona.
+  let permiteEnvio = $derived(cart.lines.every((l) => l.delivery !== false));
+  let envioActivo = $derived(entrega === 'envio' && permiteEnvio);
 
   // El servidor recalcula precios desde la base; acá solo mandamos slug y cantidad.
   let carrito = $derived(JSON.stringify(cart.items.map((i) => ({ slug: i.slug, qty: i.qty }))));
-  let costoEnvio = $derived(entrega === 'envio' ? COSTO_ENVIO : 0);
+  let costoEnvio = $derived(envioActivo ? COSTO_ENVIO : 0);
   let totalConEnvio = $derived(cart.total + costoEnvio);
 </script>
 
@@ -74,16 +77,28 @@
         <fieldset class="space-y-3 pt-2">
           <legend class="font-serif text-xl text-cacao">Entrega</legend>
           <label class="flex items-center gap-3 text-sm">
-            <input type="radio" name="entrega" value="retiro" bind:group={entrega} />
+            <input type="radio" name="modo" value="retiro" bind:group={entrega} />
             Retiro en persona
           </label>
-          <label class="flex items-center gap-3 text-sm">
-            <input type="radio" name="entrega" value="envio" bind:group={entrega} />
+          <label class="flex items-center gap-3 text-sm" class:opacity-50={!permiteEnvio}>
+            <input
+              type="radio"
+              name="modo"
+              value="envio"
+              bind:group={entrega}
+              disabled={!permiteEnvio}
+            />
             Envío a domicilio
           </label>
+          {#if !permiteEnvio}
+            <p class="text-xs text-cacao/60">
+              Alguno de los productos de tu carrito solo se puede retirar en persona.
+            </p>
+          {/if}
         </fieldset>
+        <input type="hidden" name="entrega" value={envioActivo ? 'envio' : 'retiro'} />
 
-        {#if entrega === 'envio'}
+        {#if envioActivo}
           <div class="space-y-4 rounded-2xl bg-vainilla/20 p-5">
             <div class="grid grid-cols-2 gap-4">
               <label class="block text-sm">
@@ -143,8 +158,6 @@
           </div>
         {/if}
 
-        <input type="hidden" name="entrega" value={entrega} />
-
         <button
           type="submit"
           class="w-full rounded-full bg-[#009ee3] px-7 py-3.5 text-sm font-medium tracking-wide text-white transition hover:brightness-95"
@@ -166,7 +179,7 @@
               <span class="text-cacao">{formatPrice(line.price * line.qty)}</span>
             </li>
           {/each}
-          {#if entrega === 'envio'}
+          {#if envioActivo}
             <li class="flex justify-between gap-3 text-sm">
               <span class="text-cacao/80">Envío a domicilio</span>
               <span class="text-cacao">{formatPrice(COSTO_ENVIO)}</span>

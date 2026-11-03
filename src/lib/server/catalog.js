@@ -13,7 +13,9 @@ export async function getActiveProducts() {
 
   const { data, error } = await db
     .from('products')
-    .select('id, slug, name, category, fragrance, description, price, image_path, featured')
+    .select(
+      'id, slug, name, category, fragrance, description, price, image_path, featured, delivery'
+    )
     .eq('active', true)
     .order('created_at');
 
@@ -31,6 +33,7 @@ export async function getActiveProducts() {
     description: row.description,
     price: row.price,
     featured: row.featured,
+    delivery: row.delivery,
     image: row.image_path
       ? db.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(row.image_path).data.publicUrl
       : IMAGE_FALLBACK,

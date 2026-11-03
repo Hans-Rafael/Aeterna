@@ -84,6 +84,9 @@
         <label class="flex items-center gap-2">
           <input type="checkbox" name="active" checked={p.active} /> Visible en la tienda
         </label>
+        <label class="flex items-center gap-2">
+          <input type="checkbox" name="delivery" checked={p.delivery} /> Envío a domicilio
+        </label>
       </div>
 
       <button

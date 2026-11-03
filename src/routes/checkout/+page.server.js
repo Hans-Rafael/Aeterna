@@ -92,6 +92,15 @@ export const actions = {
       lineas.push({ product, qty: item.qty });
     }
 
+    // Si el cliente pidió envío, todos los productos del carrito tienen que admitirlo.
+    if (entrega === 'envio' && lineas.some((l) => l.product.delivery === false)) {
+      return fail(400, {
+        error:
+          'Alguno de los productos de tu carrito solo se puede retirar en persona. Elegí retiro o quitalo del carrito.',
+        ...datos,
+      });
+    }
+
     // Liberamos el stock de pedidos viejos que nunca se pagaron.
     await vencerPedidosViejos(MINUTOS_RESERVA);
 
