@@ -3,6 +3,7 @@
   import { cart } from '#lib/cart.svelte.js';
   import Header from '#lib/components/Header.svelte';
   import Footer from '#lib/components/Footer.svelte';
+  import WhatsAppFlotante from '#lib/components/WhatsAppFlotante.svelte';
   import '../app.css';
 
   /** @type {{children: import('svelte').Snippet, data: { products: import('#lib/products.js').Product[] }}} */
@@ -28,3 +29,4 @@
   {@render children()}
 </main>
 <Footer />
+<WhatsAppFlotante />
