@@ -2,6 +2,7 @@
   import { cart } from '#lib/cart.svelte.js';
   import { formatPrice } from '#lib/format.js';
   import { onImageError } from '#lib/images.js';
+  import { WHATSAPP_NUMERO, whatsappUrl, mensajePedido } from '#lib/whatsapp.js';
 </script>
 
 <svelte:head>
@@ -96,6 +97,19 @@
           Finalizar compra
         </a>
       </div>
+      {#if WHATSAPP_NUMERO}
+        <a
+          href={whatsappUrl(mensajePedido(cart.lines, cart.total))}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="rounded-full bg-[#25D366] px-7 py-3 text-sm font-medium text-white hover:brightness-95"
+        >
+          Enviar pedido por WhatsApp
+        </a>
+        <p class="text-xs text-cacao/60">
+          Coordinamos el pago y la entrega (puntos de encuentro y retiro en Escobar) por mensaje.
+        </p>
+      {/if}
     </div>
   {/if}
 </section>

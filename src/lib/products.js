@@ -12,6 +12,7 @@
  * @property {string} description
  * @property {number} price
  * @property {string} image
+ * @property {string[]} [extraImages] fotos de contexto (además de la principal)
  * @property {boolean} [featured]
  * @property {boolean} [delivery]
  * @property {number} [stock]
@@ -146,4 +147,26 @@ export const categories = {
 /** @param {string} slug @returns {Product | undefined} */
 export function getProduct(slug) {
   return products.find((p) => p.slug === slug);
+}
+
+/**
+ * Qué aporta cada jabón a la piel, según su aroma.
+ * ⚠️ Texto de ejemplo: revisalo y ajustalo a los ingredientes reales de cada jabón.
+ * @type {Record<string, string[]>}
+ */
+const beneficiosJabon = {
+  Rosa: ['Hidratante y suave', 'Ideal para pieles sensibles', 'Aroma floral delicado'],
+  Lavanda: ['Relajante', 'Calma la piel', 'Ideal para la ducha de la noche'],
+  Vainilla: ['Nutritivo y suavizante', 'Deja la piel suave', 'Aroma cálido y dulce'],
+  Coco: ['Muy hidratante', 'Ideal para pieles secas', 'Aroma tropical y fresco'],
+};
+
+/**
+ * Beneficios para la piel de un jabón (lista vacía si no es jabón o no hay datos).
+ * @param {Product} product
+ * @returns {string[]}
+ */
+export function getBeneficios(product) {
+  if (product.category !== 'jabon') return [];
+  return beneficiosJabon[product.fragrance] ?? [];
 }
