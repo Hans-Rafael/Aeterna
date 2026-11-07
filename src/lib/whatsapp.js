@@ -22,12 +22,16 @@ export function whatsappUrl(mensaje = '') {
 export function mensajePedido(lines, total) {
   const items = lines.map((l) => `• ${l.qty} x ${l.name} (${formatPrice(l.price * l.qty)})`);
   return [
-    '¡Hola Aeterna! Quiero hacer este pedido:',
+    '¡Hola Aeterna! 🧼🕯️ Quiero hacer este pedido:',
     '',
     ...items,
     '',
     `Total: ${formatPrice(total)}`,
     '',
-    'Quisiera coordinar el pago (Mercado Pago / transferencia) y la entrega. ¡Gracias!',
+    '• Nombre:',
+    '• Forma de pago: (Mercado Pago / Alias)',
+    '• Entrega: (Punto de encuentro en Escobar / Retiro a coordinar)',
+    '',
+    '¡Gracias!',
   ].join('\n');
 }

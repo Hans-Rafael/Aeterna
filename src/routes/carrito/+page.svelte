@@ -106,7 +106,9 @@
         >
           Enviar pedido por WhatsApp
         </a>
-        <p class="text-xs text-cacao/60">Coordinamos el pago y la entrega por mensaje.</p>
+        <p class="text-xs text-cacao/60">
+          Coordinamos el pago y la entrega (puntos de encuentro y retiro en Escobar) por mensaje.
+        </p>
       {/if}
     </div>
   {/if}

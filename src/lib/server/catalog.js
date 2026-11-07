@@ -15,7 +15,7 @@ export async function getActiveProducts() {
   const { data, error } = await db
     .from('products')
     .select(
-      'id, slug, name, category, fragrance, description, price, image_path, featured, delivery, stock, is_pack, envio_incluido'
+      'id, slug, name, category, fragrance, description, price, image_path, featured, delivery, stock, is_pack, envio_incluido, extra_images'
     )
     .eq('active', true)
     .order('created_at');
@@ -70,6 +70,10 @@ export async function getActiveProducts() {
       image: row.image_path
         ? db.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(row.image_path).data.publicUrl
         : IMAGE_FALLBACK,
+      extraImages: (row.extra_images ?? []).map(
+        (/** @type {string} */ path) =>
+          db.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(path).data.publicUrl
+      ),
     };
   });
 }

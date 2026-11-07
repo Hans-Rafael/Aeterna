@@ -37,6 +37,36 @@
           class="mt-2 block w-full text-sm"
         />
       </label>
+
+      <div class="space-y-2 border-t border-cacao/10 pt-4 text-sm">
+        <p class="text-cacao/70">Fotos de contexto (el jabón en un baño, la vela encendida…)</p>
+        {#if data.extras.length}
+          <ul class="grid grid-cols-3 gap-2">
+            {#each data.extras as extra (extra.path)}
+              <li class="space-y-1 text-xs">
+                <img
+                  src={extra.url}
+                  alt="Foto de contexto de {p.name}"
+                  class="aspect-square w-full rounded-xl object-cover"
+                />
+                <label class="flex items-center gap-1">
+                  <input type="checkbox" name="quitar_extra" value={extra.path} /> Quitar
+                </label>
+              </li>
+            {/each}
+          </ul>
+        {/if}
+        <label class="block">
+          <span class="text-cacao/70">Agregar fotos (JPG, PNG o WebP, máx. 5 MB c/u, hasta 6)</span>
+          <input
+            type="file"
+            name="fotos_extra"
+            multiple
+            accept="image/jpeg,image/png,image/webp"
+            class="mt-2 block w-full text-sm"
+          />
+        </label>
+      </div>
     </div>
 
     <div class="space-y-4">

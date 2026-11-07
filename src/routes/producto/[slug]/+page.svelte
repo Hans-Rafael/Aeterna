@@ -3,10 +3,19 @@
   import ProductCard from '#lib/components/ProductCard.svelte';
   import { formatPrice } from '#lib/format.js';
   import { onImageError } from '#lib/images.js';
-  import { categories } from '#lib/products.js';
+  import { categories, getBeneficios } from '#lib/products.js';
 
   let { data } = $props();
   let product = $derived(data.product);
+  let beneficios = $derived(getBeneficios(product));
+
+  let galeria = $derived([product.image, ...(product.extraImages ?? [])]);
+  let elegida = $state(0);
+  // Al cambiar de producto, volver a la foto principal.
+  $effect(() => {
+    void product.slug;
+    elegida = 0;
+  });
 
   let qty = $state(1);
   let agregado = $state(false);
@@ -24,13 +33,34 @@
 </svelte:head>
 
 <section class="mx-auto grid max-w-6xl gap-10 px-4 pt-10 md:grid-cols-2 md:pt-16">
-  <div class="overflow-hidden rounded-3xl bg-vainilla/30 shadow-sm">
-    <img
-      src={product.image}
-      alt={product.name}
-      onerror={onImageError}
-      class="h-full w-full object-cover"
-    />
+  <div>
+    <div class="overflow-hidden rounded-3xl bg-vainilla/30 shadow-sm">
+      <img
+        src={galeria[elegida] ?? product.image}
+        alt={product.name}
+        onerror={onImageError}
+        class="aspect-square w-full object-cover"
+      />
+    </div>
+    {#if galeria.length > 1}
+      <ul class="mt-3 grid grid-cols-5 gap-2">
+        {#each galeria as src, i (src)}
+          <li>
+            <button
+              type="button"
+              onclick={() => (elegida = i)}
+              aria-label="Ver foto {i + 1} de {galeria.length}"
+              aria-current={i === elegida}
+              class="block w-full overflow-hidden rounded-xl border-2 {i === elegida
+                ? 'border-rosa-oscuro'
+                : 'border-transparent opacity-70 hover:opacity-100'}"
+            >
+              <img {src} alt="" onerror={onImageError} class="aspect-square w-full object-cover" />
+            </button>
+          </li>
+        {/each}
+      </ul>
+    {/if}
   </div>
 
   <div class="flex flex-col justify-center">
@@ -46,6 +76,17 @@
     <p class="mt-6 font-serif text-3xl text-cacao">{formatPrice(product.price)}</p>
     <p class="mt-4 leading-relaxed text-cacao/75">{product.description}</p>
 
+    {#if beneficios.length}
+      <div class="mt-4 text-sm text-cacao/80">
+        <p class="font-medium">Beneficios para tu piel:</p>
+        <ul class="mt-1 list-disc pl-5">
+          {#each beneficios as beneficio (beneficio)}
+            <li>{beneficio}</li>
+          {/each}
+        </ul>
+      </div>
+    {/if}
+
     {#if data.incluye?.length}
       <div class="mt-4 text-sm text-cacao/80">
         <p class="font-medium">Incluye:</p>
@@ -54,9 +95,6 @@
             <li>{item.quantity} × {item.name}</li>
           {/each}
         </ul>
-        <p class="mt-2 text-xs text-cacao/60">
-          {product.envioIncluido ? 'Envío incluido.' : 'El envío a domicilio se cobra aparte.'}
-        </p>
       </div>
     {/if}
 

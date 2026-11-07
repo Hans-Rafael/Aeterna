@@ -1,5 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { COSTO_ENVIO, MINUTOS_RESERVA, PROVINCIAS } from '#lib/envio.js';
+import { MINUTOS_RESERVA } from '#lib/envio.js';
 import { getActiveProducts } from '#lib/server/catalog.js';
 import { crearPreferencia } from '#lib/server/mercadopago.js';
 import {
@@ -19,42 +19,18 @@ const texto = (valor) => String(valor ?? '').trim();
 export const actions = {
   default: async ({ request, url }) => {
     const form = await request.formData();
-    const entrega = form.get('entrega') === 'envio' ? 'envio' : 'retiro';
 
+    // Solo hay retiro / punto de encuentro en Escobar (se coordina por WhatsApp). No hay envíos.
     const datos = {
       nombre: texto(form.get('nombre')),
       email: texto(form.get('email')),
       telefono: texto(form.get('telefono')),
-      entrega,
-      /** @type {null | { codigoPostal: string, provincia: string, localidad: string, calle: string, numero: string, pisoDepto: string | null, notas: string | null }} */
+      entrega: 'retiro',
       envio: null,
     };
 
     if (!datos.nombre || !EMAIL.test(datos.email) || !datos.telefono) {
-      return fail(400, { error: 'Revisá nombre, email y teléfono.', ...datos, envio: undefined });
-    }
-
-    if (entrega === 'envio') {
-      const envio = {
-        codigoPostal: texto(form.get('codigoPostal')),
-        provincia: texto(form.get('provincia')),
-        localidad: texto(form.get('localidad')),
-        calle: texto(form.get('calle')),
-        numero: texto(form.get('numero')),
-        pisoDepto: texto(form.get('pisoDepto')) || null,
-        notas: texto(form.get('notas')) || null,
-      };
-      const faltan = !envio.codigoPostal || !envio.localidad || !envio.calle || !envio.numero;
-      if (faltan) {
-        return fail(400, {
-          error: 'Para el envío completá código postal, localidad, calle y número.',
-          ...datos,
-        });
-      }
-      if (!PROVINCIAS.includes(envio.provincia)) {
-        return fail(400, { error: 'Elegí una provincia válida.', ...datos });
-      }
-      datos.envio = envio;
+      return fail(400, { error: 'Revisá nombre, email y teléfono.', ...datos });
     }
 
     // El carrito llega como lista de { slug, qty }. El precio NUNCA viene del navegador.
@@ -90,19 +66,6 @@ export const actions = {
       lineas.push({ product, qty: item.qty });
     }
 
-    // Si el cliente pidió envío, todos los productos del carrito tienen que admitirlo.
-    if (entrega === 'envio' && lineas.some((l) => l.product.delivery === false)) {
-      return fail(400, {
-        error:
-          'Alguno de los productos de tu carrito solo se puede retirar en persona. Elegí retiro o quitalo del carrito.',
-        ...datos,
-      });
-    }
-
-    // Envío: se cobra salvo que todos los productos del carrito lo tengan incluido.
-    const costoEnvio =
-      entrega === 'envio' && !lineas.every((l) => l.product.envioIncluido) ? COSTO_ENVIO : 0;
-
     // Stock a descontar: un pack descuenta las unidades de sus componentes.
     /** @type {{ product_id: string, qty: number }[]} */
     const reservas = [];
@@ -121,7 +84,7 @@ export const actions = {
 
     let pedido;
     try {
-      pedido = await crearPedido({ datos, costoEnvio, lineas, reservas });
+      pedido = await crearPedido({ datos, costoEnvio: 0, lineas, reservas });
     } catch (err) {
       if (err instanceof SinStockError) {
         return fail(409, {
@@ -139,9 +102,6 @@ export const actions = {
       quantity: l.qty,
       unit_price: l.product.price,
     }));
-    if (costoEnvio > 0) {
-      items.push({ title: 'Envío a domicilio', quantity: 1, unit_price: costoEnvio });
-    }
 
     const preferencia = await crearPreferencia({
       pedidoId: pedido.id,
