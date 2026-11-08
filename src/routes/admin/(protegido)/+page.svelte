@@ -12,6 +12,41 @@
   let enAlerta = $derived(
     data.products.filter((/** @type {any} */ p) => !p.is_pack && estadoStock(p.stock) !== 'ok')
   );
+
+  /** Orden de la tabla: columna y sentido. Sin elegir, se respeta el orden de carga. */
+  /** @type {{ col: 'name' | 'category' | 'price' | 'stock' | null, asc: boolean }} */
+  let orden = $state({ col: null, asc: true });
+
+  /** @param {'name' | 'category' | 'price' | 'stock'} col */
+  function ordenarPor(col) {
+    // Primer clic: de menor a mayor. Clic en la misma columna: se invierte.
+    orden = orden.col === col ? { col, asc: !orden.asc } : { col, asc: true };
+  }
+
+  /** @type {{ col: 'name' | 'category' | 'price' | 'stock', titulo: string }[]} */
+  const columnas = [
+    { col: 'name', titulo: 'Producto' },
+    { col: 'category', titulo: 'Categoría' },
+    { col: 'price', titulo: 'Precio' },
+    { col: 'stock', titulo: 'Stock' },
+  ];
+
+  let productos = $derived.by(() => {
+    const { col, asc } = orden;
+    if (!col) return data.products;
+    const signo = asc ? 1 : -1;
+    return [...data.products].sort((/** @type {any} */ a, /** @type {any} */ b) => {
+      // El stock de los packs sale de sus componentes: van siempre al final.
+      if (col === 'stock' && a.is_pack !== b.is_pack) return a.is_pack ? 1 : -1;
+      const va = col === 'category' ? categorias[a.category] : a[col];
+      const vb = col === 'category' ? categorias[b.category] : b[col];
+      const cmp =
+        typeof va === 'number' && typeof vb === 'number'
+          ? va - vb
+          : String(va).localeCompare(String(vb), 'es');
+      return cmp * signo || a.name.localeCompare(b.name, 'es');
+    });
+  });
 </script>
 
 <svelte:head>
@@ -65,16 +100,28 @@
     <table class="w-full text-sm">
       <thead class="bg-vainilla/30 text-left text-cacao/70">
         <tr>
-          <th class="px-4 py-3 font-normal">Producto</th>
-          <th class="font-normal">Categoría</th>
-          <th class="font-normal">Precio</th>
-          <th class="font-normal">Stock</th>
+          {#each columnas as { col, titulo } (col)}
+            <th
+              class="font-normal {col === 'name' ? 'px-4 py-3' : ''}"
+              aria-sort={orden.col === col ? (orden.asc ? 'ascending' : 'descending') : 'none'}
+            >
+              <button
+                type="button"
+                onclick={() => ordenarPor(col)}
+                class="hover:text-rosa-oscuro {orden.col === col ? 'text-cacao' : ''}"
+                title="Ordenar por {titulo.toLowerCase()}"
+              >
+                {titulo}
+                <span class="text-xs">{orden.col === col ? (orden.asc ? '▲' : '▼') : '↕'}</span>
+              </button>
+            </th>
+          {/each}
           <th class="font-normal">Estado</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
-        {#each data.products as p (p.id)}
+        {#each productos as p (p.id)}
           <tr class="border-t border-cacao/10">
             <td class="px-4 py-3 font-serif text-base">
               {p.name}
