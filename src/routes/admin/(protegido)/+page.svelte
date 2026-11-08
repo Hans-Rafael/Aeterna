@@ -40,7 +40,10 @@
     { col: 'price', titulo: 'Precio' },
     { col: 'stock', titulo: 'Stock' },
   ];
-  const columnasReponer = columnas.filter((c) => c.col !== 'price');
+  /** Columnas de la tabla de reponer, en el orden en que se muestran. */
+  const columnasReponer = ['name', 'stock', 'category', 'shape', 'fragrance'].map(
+    (col) => /** @type {(typeof columnas)[number]} */ (columnas.find((c) => c.col === col))
+  );
 
   /**
    * Cada tabla tiene su propio orden, en el orden de los clics. Vacío: la de productos respeta
@@ -126,10 +129,10 @@
             {#each enAlerta as p (p.id)}
               <tr class="border-t border-cacao/10">
                 <td class="py-1 pr-4">{p.name}</td>
+                <td class="py-1 pr-4">{p.stock <= 0 ? 'sin stock' : `quedan ${p.stock}`}</td>
                 <td class="py-1 pr-4">{categorias[p.category]}</td>
                 <td class="py-1 pr-4">{detalle(p.shape, formaLabels) || '—'}</td>
-                <td class="py-1 pr-4">{p.fragrance || '—'}</td>
-                <td class="py-1">{p.stock <= 0 ? 'sin stock' : `quedan ${p.stock}`}</td>
+                <td class="py-1">{p.fragrance || '—'}</td>
               </tr>
             {/each}
           </tbody>
