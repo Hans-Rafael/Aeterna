@@ -138,14 +138,14 @@
       <div class="flex items-center rounded-full border border-cacao/20">
         <button
           type="button"
-          class="h-11 w-11 text-lg hover:text-rosa-oscuro"
+          class="h-12 w-12 text-lg hover:text-rosa-oscuro"
           onclick={() => (qty = Math.max(1, qty - 1))}
           aria-label="Quitar uno">−</button
         >
         <span class="w-8 text-center" aria-live="polite">{qty}</span>
         <button
           type="button"
-          class="h-11 w-11 text-lg hover:text-rosa-oscuro"
+          class="h-12 w-12 text-lg hover:text-rosa-oscuro"
           onclick={() => (qty = Math.min(99, qty + 1))}
           aria-label="Agregar uno">+</button
         >
@@ -154,7 +154,7 @@
       <button
         type="button"
         onclick={agregar}
-        class="h-11 rounded-full px-8 text-sm tracking-wide text-crema transition {agotado
+        class="h-12 rounded-full px-8 text-sm tracking-wide text-crema transition {agotado
           ? 'bg-cacao/50 hover:bg-cacao/60'
           : 'bg-cacao hover:bg-rosa-oscuro'}"
       >
