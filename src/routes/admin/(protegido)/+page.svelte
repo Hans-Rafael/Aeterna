@@ -71,7 +71,15 @@
       <tbody>
         {#each data.products as p (p.id)}
           <tr class="border-t border-cacao/10">
-            <td class="px-4 py-3 font-serif text-base">{p.name}</td>
+            <td class="px-4 py-3 font-serif text-base">
+              {p.name}
+              {#if p.featured}
+                <span
+                  class="ml-2 rounded-full bg-rosa/40 px-2 py-0.5 align-middle font-sans text-xs text-cacao"
+                  title="Destacado en la tienda">★ Destacado</span
+                >
+              {/if}
+            </td>
             <td>{categorias[p.category]}</td>
             <td>{formatPrice(p.price)}</td>
             <td>

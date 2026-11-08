@@ -3,6 +3,21 @@
 
   let { data } = $props();
   let featured = $derived(data.products.filter((p) => p.featured));
+
+  /**
+   * Foto de cada categoría en el home: la primera foto de contexto de un producto de esa
+   * categoría (los destacados primero). Si no hay ninguna, se usa la foto de siempre.
+   * @param {string} categoria
+   * @param {string} respaldo
+   */
+  function fotoCategoria(categoria, respaldo) {
+    const candidatos = data.products
+      .filter((p) => p.category === categoria && p.extraImages?.length)
+      .sort((a, b) => Number(!!b.featured) - Number(!!a.featured));
+    return candidatos[0]?.extraImages?.[0] ?? respaldo;
+  }
+  let fotoJabones = $derived(fotoCategoria('jabon', '/productos/jabon-lavanda-masaje.jpeg'));
+  let fotoVelas = $derived(fotoCategoria('vela', '/productos/vela-vainilla-perrito.jpeg'));
 </script>
 
 <!-- Hero -->
@@ -62,7 +77,7 @@
     class="group relative block aspect-[4/3] overflow-hidden rounded-3xl"
   >
     <img
-      src="/productos/jabon-lavanda-masaje.jpeg"
+      src={fotoJabones}
       alt="Jabones artesanales"
       loading="lazy"
       class="h-full w-full object-cover transition duration-700 group-hover:scale-105"
@@ -78,7 +93,7 @@
     class="group relative block aspect-[4/3] overflow-hidden rounded-3xl"
   >
     <img
-      src="/productos/vela-vainilla-perrito.jpeg"
+      src={fotoVelas}
       alt="Velas artesanales"
       loading="lazy"
       class="h-full w-full object-cover transition duration-700 group-hover:scale-105"

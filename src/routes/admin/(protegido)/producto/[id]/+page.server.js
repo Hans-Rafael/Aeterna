@@ -87,7 +87,21 @@ export const actions = {
     for (const f of /** @type {File[]} */ (nuevas)) {
       extras.push(await uploadProductImage(f, product.slug));
     }
-    cambios.extra_images = extras;
+
+    // "Hacer principal": la foto elegida pasa a ser la principal y la principal anterior
+    // ocupa su lugar entre las fotos de contexto.
+    const principal = form
+      .getAll('hacer_principal')
+      .map(String)
+      .find((path) => !cambios.image_path && extras.includes(path));
+    if (principal) {
+      const anterior = product.image_path;
+      const resto = extras.filter((/** @type {string} */ path) => path !== principal);
+      cambios.image_path = principal;
+      cambios.extra_images = anterior ? [anterior, ...resto] : resto;
+    } else {
+      cambios.extra_images = extras;
+    }
 
     await updateProduct(params.id, cambios);
     redirect(303, `/admin/producto/${params.id}?guardado=1`);
