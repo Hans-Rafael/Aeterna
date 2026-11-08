@@ -1,6 +1,7 @@
 <script>
   import { page } from '$app/state';
   import { formatPrice } from '#lib/format.js';
+  import { formaLabels } from '#lib/products.js';
 
   let { data } = $props();
   /** @type {Record<string, string>} */
@@ -14,22 +15,37 @@
   );
 
   /** Orden de la tabla: columna y sentido. Sin elegir, se respeta el orden de carga. */
-  /** @type {{ col: 'name' | 'category' | 'price' | 'stock' | null, asc: boolean }} */
+  /** @type {{ col: 'name' | 'category' | 'shape' | 'fragrance' | 'price' | 'stock' | null, asc: boolean }} */
   let orden = $state({ col: null, asc: true });
 
-  /** @param {'name' | 'category' | 'price' | 'stock'} col */
+  /** @param {'name' | 'category' | 'shape' | 'fragrance' | 'price' | 'stock'} col */
   function ordenarPor(col) {
     // Primer clic: de menor a mayor. Clic en la misma columna: se invierte.
     orden = orden.col === col ? { col, asc: !orden.asc } : { col, asc: true };
   }
 
-  /** @type {{ col: 'name' | 'category' | 'price' | 'stock', titulo: string }[]} */
+  /** @type {{ col: 'name' | 'category' | 'shape' | 'fragrance' | 'price' | 'stock', titulo: string }[]} */
   const columnas = [
     { col: 'name', titulo: 'Producto' },
     { col: 'category', titulo: 'Categoría' },
+    { col: 'shape', titulo: 'Forma' },
+    { col: 'fragrance', titulo: 'Aroma' },
     { col: 'price', titulo: 'Precio' },
     { col: 'stock', titulo: 'Stock' },
   ];
+
+  /**
+   * @param {any} p
+   * @param {string} col
+   */
+  function valorOrden(p, col) {
+    if (col === 'category') return categorias[p.category];
+    if (col === 'shape')
+      return p.shape
+        ? (formaLabels[/** @type {keyof typeof formaLabels} */ (p.shape)] ?? p.shape)
+        : '';
+    return p[col] ?? '';
+  }
 
   let productos = $derived.by(() => {
     const { col, asc } = orden;
@@ -38,8 +54,10 @@
     return [...data.products].sort((/** @type {any} */ a, /** @type {any} */ b) => {
       // El stock de los packs sale de sus componentes: van siempre al final.
       if (col === 'stock' && a.is_pack !== b.is_pack) return a.is_pack ? 1 : -1;
-      const va = col === 'category' ? categorias[a.category] : a[col];
-      const vb = col === 'category' ? categorias[b.category] : b[col];
+      const va = valorOrden(a, col);
+      const vb = valorOrden(b, col);
+      // Los productos sin valor (p. ej. packs sin forma) van siempre al final.
+      if (va === '' || vb === '') return va === vb ? 0 : va === '' ? 1 : -1;
       const cmp =
         typeof va === 'number' && typeof vb === 'number'
           ? va - vb
@@ -133,6 +151,8 @@
               {/if}
             </td>
             <td>{categorias[p.category]}</td>
+            <td>{valorOrden(p, 'shape') || '—'}</td>
+            <td>{p.fragrance || '—'}</td>
             <td>{formatPrice(p.price)}</td>
             <td>
               {#if p.is_pack}
@@ -158,7 +178,7 @@
             </td>
           </tr>
         {:else}
-          <tr><td colspan="6" class="px-4 py-6 text-center text-cacao/60">No hay productos.</td></tr
+          <tr><td colspan="8" class="px-4 py-6 text-center text-cacao/60">No hay productos.</td></tr
           >
         {/each}
       </tbody>
