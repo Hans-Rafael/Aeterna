@@ -3,7 +3,7 @@ import { IMAGE_FALLBACK } from '#lib/images.js';
 import { adminClient } from '#lib/server/supabaseAdmin.js';
 
 const COLUMNAS =
-  'id, slug, name, category, fragrance, shape, description, price, stock, image_path, featured, active, delivery, is_pack, envio_incluido, extra_images';
+  'id, slug, name, category, fragrance, shape, description, price, stock, image_path, featured, active, delivery, is_pack, envio_incluido, extra_images, benefits, ingredients';
 
 /** Todos los productos, incluidos los ocultos. */
 export async function listAllProducts() {

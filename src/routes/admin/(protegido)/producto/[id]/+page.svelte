@@ -93,6 +93,23 @@
       <label class="block text-sm">
         <span class="text-cacao/70">Descripción</span>
         <textarea name="description" rows="4" class="field">{p.description}</textarea>
+        <span class="text-xs text-cacao/50"
+          >Puedes escribir varias líneas: por ejemplo, un eslogan y debajo una descripción corta.</span
+        >
+      </label>
+      <label class="block text-sm">
+        <span class="text-cacao/70">Beneficios (uno por línea)</span>
+        <textarea
+          name="benefits"
+          rows="4"
+          class="field"
+          placeholder="Hidratante y suave&#10;Ideal para pieles sensibles"
+          >{p.benefits ?? ''}</textarea
+        >
+      </label>
+      <label class="block text-sm">
+        <span class="text-cacao/70">Ingredientes</span>
+        <input name="ingredients" class="field" value={p.ingredients ?? ''} />
       </label>
       <div class="grid grid-cols-2 gap-4">
         <label class="block text-sm">

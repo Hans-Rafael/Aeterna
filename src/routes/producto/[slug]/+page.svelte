@@ -97,7 +97,7 @@
     </p>
 
     <p class="mt-6 font-serif text-3xl text-cacao">{formatPrice(product.price)}</p>
-    <p class="mt-4 leading-relaxed text-cacao/75">{product.description}</p>
+    <p class="mt-4 leading-relaxed whitespace-pre-line text-cacao/75">{product.description}</p>
 
     {#if beneficios.length}
       <div class="mt-4 text-sm text-cacao/80">

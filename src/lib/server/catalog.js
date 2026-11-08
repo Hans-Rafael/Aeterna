@@ -1,5 +1,5 @@
 import { PRODUCT_IMAGES_BUCKET, supabase } from '#lib/supabaseClient.js';
-import { products as sampleProducts } from '#lib/products.js';
+import { parseBeneficios, products as sampleProducts } from '#lib/products.js';
 import { IMAGE_FALLBACK } from '#lib/images.js';
 
 /**
@@ -15,7 +15,7 @@ export async function getActiveProducts() {
   const { data, error } = await db
     .from('products')
     .select(
-      'id, slug, name, category, fragrance, shape, description, price, image_path, featured, delivery, stock, is_pack, envio_incluido, extra_images'
+      'id, slug, name, category, fragrance, shape, description, price, image_path, featured, delivery, stock, is_pack, envio_incluido, extra_images, benefits, ingredients'
     )
     .eq('active', true)
     .order('created_at');
@@ -61,6 +61,8 @@ export async function getActiveProducts() {
       fragrance: row.fragrance,
       shape: row.shape ?? undefined,
       description: row.description,
+      benefits: parseBeneficios(row.benefits ?? ''),
+      ingredients: row.ingredients ?? '',
       price: row.price,
       featured: row.featured,
       delivery: row.delivery,

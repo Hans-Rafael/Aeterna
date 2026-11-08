@@ -10,7 +10,9 @@
  * @property {'jabon' | 'vela' | 'pack'} category
  * @property {string} fragrance aroma o función (Rosa, Menta, Exfoliante…)
  * @property {string} [shape] forma (ver `formas`)
- * @property {string} description
+ * @property {string} description puede tener varias líneas (p. ej. eslogan y descripción)
+ * @property {string[]} [benefits] beneficios cargados en el admin
+ * @property {string} [ingredients] ingredientes cargados en el admin
  * @property {number} price
  * @property {string} image
  * @property {string[]} [extraImages] fotos de contexto (además de la principal)
@@ -260,6 +262,8 @@ const ingredientesJabon = {
  * @returns {string}
  */
 export function getIngredientes(product) {
+  // Lo cargado en el admin tiene prioridad sobre el texto fijo por aroma.
+  if (product.ingredients) return product.ingredients;
   if (product.category !== 'jabon') return '';
   return ingredientesJabon[clave(product.fragrance)] ?? '';
 }
@@ -270,6 +274,20 @@ export function getIngredientes(product) {
  * @returns {string[]}
  */
 export function getBeneficios(product) {
+  // Lo cargado en el admin tiene prioridad sobre la lista fija por aroma.
+  if (product.benefits?.length) return product.benefits;
   if (product.category !== 'jabon') return [];
   return beneficiosJabon[clave(product.fragrance)] ?? [];
+}
+
+/**
+ * Convierte el texto del admin (un beneficio por línea) en lista, sin líneas vacías.
+ * @param {string} texto
+ * @returns {string[]}
+ */
+export function parseBeneficios(texto) {
+  return texto
+    .split(/\r?\n/)
+    .map((linea) => linea.trim())
+    .filter(Boolean);
 }

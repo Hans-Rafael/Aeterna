@@ -1,5 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { formas } from '#lib/products.js';
+import { formas, parseBeneficios } from '#lib/products.js';
 import { createProduct, slugProducto, uploadProductImage } from '#lib/server/admin-products.js';
 
 const MAX_FOTO_BYTES = 5 * 1024 * 1024;
@@ -12,6 +12,9 @@ export const actions = {
     const name = String(form.get('name') ?? '').trim();
     const fragrance = String(form.get('fragrance') ?? '').trim();
     const description = String(form.get('description') ?? '').trim();
+    // Un beneficio por línea; se guardan sin líneas vacías.
+    const benefits = parseBeneficios(String(form.get('benefits') ?? '')).join('\n');
+    const ingredients = String(form.get('ingredients') ?? '').trim();
     const category = String(form.get('category') ?? '');
     const shape = String(form.get('shape') ?? '');
     const price = Number.parseInt(String(form.get('price') ?? ''), 10);
@@ -44,6 +47,8 @@ export const actions = {
       name,
       fragrance,
       description,
+      benefits,
+      ingredients,
       category,
       shape: shape || null,
       price,
