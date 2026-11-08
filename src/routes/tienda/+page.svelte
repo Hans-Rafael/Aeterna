@@ -132,11 +132,15 @@
     </div>
   {/if}
 
-  <div class="mt-4 flex items-center justify-between gap-4 text-sm text-cacao/70">
-    <p>{pag.total} {pag.total === 1 ? 'producto' : 'productos'}</p>
-    <div class="flex flex-wrap items-center justify-end gap-4">
+  <div
+    class="mt-4 flex flex-col gap-3 text-sm text-cacao/70 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+  >
+    <p class="order-2 sm:order-1">{pag.total} {pag.total === 1 ? 'producto' : 'productos'}</p>
+    <div
+      class="order-1 flex flex-col gap-2 sm:order-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-4"
+    >
       {#if formasDisponibles.length}
-        <label class="flex items-center gap-2">
+        <label class="flex items-center justify-between gap-2 sm:justify-start">
           <span>Forma</span>
           <select
             class="rounded-full border border-cacao/20 bg-white px-4 py-2 text-cacao focus:outline-2 focus:outline-rosa-oscuro"
@@ -150,7 +154,7 @@
           </select>
         </label>
       {/if}
-      <label class="flex items-center gap-2">
+      <label class="flex items-center justify-between gap-2 sm:justify-start">
         <span>Ordenar por</span>
         <select
           class="rounded-full border border-cacao/20 bg-white px-4 py-2 text-cacao focus:outline-2 focus:outline-rosa-oscuro"
