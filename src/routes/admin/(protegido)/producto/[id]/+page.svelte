@@ -1,8 +1,12 @@
 <script>
+  import { untrack } from 'svelte';
   import { page } from '$app/state';
+
+  import { aromas, formaLabels, formas } from '#lib/products.js';
 
   let { data, form } = $props();
   let p = $derived(data.product);
+  let categoria = $state(/** @type {'jabon' | 'vela'} */ (untrack(() => data.product.category)));
   let guardado = $derived(page.url.searchParams.has('guardado'));
 </script>
 
@@ -78,8 +82,13 @@
         <input name="name" required value={p.name} class="field" />
       </label>
       <label class="block text-sm">
-        <span class="text-cacao/70">Fragancia</span>
-        <input name="fragrance" required value={p.fragrance} class="field" />
+        <span class="text-cacao/70">Aroma o función</span>
+        <input name="fragrance" required value={p.fragrance} class="field" list="aromas" />
+        <datalist id="aromas">
+          {#each aromas as a (a)}
+            <option value={a}></option>
+          {/each}
+        </datalist>
       </label>
       <label class="block text-sm">
         <span class="text-cacao/70">Descripción</span>
@@ -105,9 +114,18 @@
       </div>
       <label class="block text-sm">
         <span class="text-cacao/70">Categoría</span>
-        <select name="category" class="field">
-          <option value="jabon" selected={p.category === 'jabon'}>Jabón</option>
-          <option value="vela" selected={p.category === 'vela'}>Vela</option>
+        <select name="category" class="field" bind:value={categoria}>
+          <option value="jabon">Jabón</option>
+          <option value="vela">Vela</option>
+        </select>
+      </label>
+      <label class="block text-sm">
+        <span class="text-cacao/70">Forma</span>
+        <select name="shape" class="field">
+          <option value="">Sin forma</option>
+          {#each formas[categoria] as f (f)}
+            <option value={f} selected={p.shape === f}>{formaLabels[f]}</option>
+          {/each}
         </select>
       </label>
       <div class="flex gap-6 text-sm">

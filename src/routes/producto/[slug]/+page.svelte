@@ -3,7 +3,7 @@
   import ProductCard from '#lib/components/ProductCard.svelte';
   import { formatPrice } from '#lib/format.js';
   import { onImageError } from '#lib/images.js';
-  import { categories, getBeneficios } from '#lib/products.js';
+  import { categories, formaLabels, getBeneficios } from '#lib/products.js';
 
   let { data } = $props();
   let product = $derived(data.product);
@@ -71,7 +71,9 @@
       ← {categories[product.category].label}
     </a>
     <h1 class="mt-3 font-serif text-4xl text-cacao sm:text-5xl">{product.name}</h1>
-    <p class="mt-2 text-sm text-cacao/60">Fragancia: {product.fragrance}</p>
+    <p class="mt-2 text-sm text-cacao/60">
+      {product.shape ? `${formaLabels[product.shape] ?? product.shape} · ` : ''}Aroma o función: {product.fragrance}
+    </p>
 
     <p class="mt-6 font-serif text-3xl text-cacao">{formatPrice(product.price)}</p>
     <p class="mt-4 leading-relaxed text-cacao/75">{product.description}</p>

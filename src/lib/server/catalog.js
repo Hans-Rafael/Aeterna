@@ -15,7 +15,7 @@ export async function getActiveProducts() {
   const { data, error } = await db
     .from('products')
     .select(
-      'id, slug, name, category, fragrance, description, price, image_path, featured, delivery, stock, is_pack, envio_incluido, extra_images'
+      'id, slug, name, category, fragrance, shape, description, price, image_path, featured, delivery, stock, is_pack, envio_incluido, extra_images'
     )
     .eq('active', true)
     .order('created_at');
@@ -59,6 +59,7 @@ export async function getActiveProducts() {
       name: row.name,
       category: row.category,
       fragrance: row.fragrance,
+      shape: row.shape ?? undefined,
       description: row.description,
       price: row.price,
       featured: row.featured,

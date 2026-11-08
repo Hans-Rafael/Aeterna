@@ -3,7 +3,7 @@
   import { page } from '$app/state';
   import ProductCard from '#lib/components/ProductCard.svelte';
   import { paginate } from '#lib/pagination.js';
-  import { categories } from '#lib/products.js';
+  import { categories, formaLabels, formas } from '#lib/products.js';
   import { ORDENES, sortProducts } from '#lib/sort.js';
 
   let { data } = $props();
@@ -23,9 +23,31 @@
       : 'recomendados'
   );
 
-  let filtrados = $derived(
+  let enCategoria = $derived(
     categoria ? data.products.filter((p) => p.category === categoria) : data.products
   );
+
+  // Forma y aroma solo se ofrecen si hay una categoría con formas (jabón o vela).
+  let formasDisponibles = $derived(
+    categoria && categoria in formas
+      ? formas[/** @type {keyof typeof formas} */ (categoria)].filter((f) =>
+          enCategoria.some((p) => p.shape === f)
+        )
+      : []
+  );
+  let formaPedida = $derived(page.url.searchParams.get('forma') ?? '');
+  let forma = $derived(formasDisponibles.includes(formaPedida) ? formaPedida : null);
+
+  let enForma = $derived(forma ? enCategoria.filter((p) => p.shape === forma) : enCategoria);
+  let aromasDisponibles = $derived(
+    categoria === 'jabon' || categoria === 'vela'
+      ? [...new Set(enCategoria.map((p) => p.fragrance))].sort((a, b) => a.localeCompare(b, 'es'))
+      : []
+  );
+  let aromaPedido = $derived(page.url.searchParams.get('aroma') ?? '');
+  let aroma = $derived(aromasDisponibles.includes(aromaPedido) ? aromaPedido : null);
+
+  let filtrados = $derived(aroma ? enForma.filter((p) => p.fragrance === aroma) : enForma);
   let ordenados = $derived(sortProducts(filtrados, orden));
   let pag = $derived(paginate(ordenados, page.url.searchParams.get('pagina')));
   let titulo = $derived(categoria ? categories[categoria].label : 'Tienda');
@@ -33,12 +55,21 @@
 
   /**
    * Arma la URL de la tienda. Los valores ya fueron validados arriba
-   * (categoría y orden contra sus listas), así que no hace falta escaparlos.
-   * @param {{ categoria?: string | null, orden?: string | null, pagina?: number | null }} params
+   * (categoría, forma, aroma y orden contra sus listas); el aroma se codifica porque
+   * puede tener tildes o espacios.
+   * @param {{ categoria?: string | null, forma?: string | null, aroma?: string | null, orden?: string | null, pagina?: number | null }} params
    */
-  function urlTienda({ categoria: cat = categoria, orden: ord = orden, pagina = null }) {
+  function urlTienda({
+    categoria: cat = categoria,
+    forma: form = null,
+    aroma: aro = null,
+    orden: ord = orden,
+    pagina = null,
+  }) {
     const partes = [];
     if (cat) partes.push(`categoria=${cat}`);
+    if (form) partes.push(`forma=${form}`);
+    if (aro) partes.push(`aroma=${encodeURIComponent(aro)}`);
     if (ord && ord !== 'recomendados') partes.push(`orden=${ord}`);
     if (pagina && pagina > 1) partes.push(`pagina=${pagina}`);
     return partes.length ? `/tienda?${partes.join('&')}` : '/tienda';
@@ -48,7 +79,7 @@
   function cambiarOrden(event) {
     const value = /** @type {HTMLSelectElement} */ (event.currentTarget).value;
     // Al cambiar el orden volvemos a la primera página.
-    goto(urlTienda({ orden: value, pagina: null }));
+    goto(urlTienda({ forma, aroma, orden: value, pagina: null }));
   }
 </script>
 
@@ -75,6 +106,45 @@
       </a>
     {/each}
   </div>
+
+  {#if formasDisponibles.length}
+    <div class="mt-4 flex flex-wrap justify-center gap-2 text-xs">
+      <span class="self-center text-cacao/60">Forma:</span>
+      <a
+        href={urlTienda({ forma: null, aroma })}
+        class="rounded-full border px-4 py-1.5 {forma === null
+          ? 'border-rosa-oscuro text-rosa-oscuro'
+          : 'border-cacao/20 text-cacao/70 hover:border-rosa-oscuro'}">Todas</a
+      >
+      {#each formasDisponibles as f (f)}
+        <a
+          href={urlTienda({ forma: f, aroma })}
+          class="rounded-full border px-4 py-1.5 {forma === f
+            ? 'border-rosa-oscuro text-rosa-oscuro'
+            : 'border-cacao/20 text-cacao/70 hover:border-rosa-oscuro'}">{formaLabels[f] ?? f}</a
+        >
+      {/each}
+    </div>
+  {/if}
+  {#if aromasDisponibles.length > 1}
+    <div class="mt-3 flex flex-wrap justify-center gap-2 text-xs">
+      <span class="self-center text-cacao/60">Aroma o función:</span>
+      <a
+        href={urlTienda({ forma, aroma: null })}
+        class="rounded-full border px-4 py-1.5 {aroma === null
+          ? 'border-rosa-oscuro text-rosa-oscuro'
+          : 'border-cacao/20 text-cacao/70 hover:border-rosa-oscuro'}">Todos</a
+      >
+      {#each aromasDisponibles as a (a)}
+        <a
+          href={urlTienda({ forma, aroma: a })}
+          class="rounded-full border px-4 py-1.5 {aroma === a
+            ? 'border-rosa-oscuro text-rosa-oscuro'
+            : 'border-cacao/20 text-cacao/70 hover:border-rosa-oscuro'}">{a}</a
+        >
+      {/each}
+    </div>
+  {/if}
 
   <div class="mt-8 flex items-center justify-between gap-4 text-sm text-cacao/70">
     <p>{pag.total} {pag.total === 1 ? 'producto' : 'productos'}</p>
@@ -106,7 +176,7 @@
     <nav aria-label="Paginación" class="mt-14 mb-10 flex items-center justify-center gap-2 text-sm">
       {#if pag.hasPrev}
         <a
-          href={urlTienda({ pagina: pag.page - 1 })}
+          href={urlTienda({ forma, aroma, pagina: pag.page - 1 })}
           class="rounded-full border border-cacao/20 px-4 py-2 text-cacao/70 hover:border-rosa-oscuro hover:text-rosa-oscuro"
           rel="prev">Anterior</a
         >
@@ -114,7 +184,7 @@
 
       {#each numeros as n (n)}
         <a
-          href={urlTienda({ pagina: n })}
+          href={urlTienda({ forma, aroma, pagina: n })}
           aria-current={n === pag.page ? 'page' : undefined}
           class="h-9 w-9 rounded-full border text-center leading-9 transition {n === pag.page
             ? 'border-cacao bg-cacao text-crema'
@@ -126,7 +196,7 @@
 
       {#if pag.hasNext}
         <a
-          href={urlTienda({ pagina: pag.page + 1 })}
+          href={urlTienda({ forma, aroma, pagina: pag.page + 1 })}
           class="rounded-full border border-cacao/20 px-4 py-2 text-cacao/70 hover:border-rosa-oscuro hover:text-rosa-oscuro"
           rel="next">Siguiente</a
         >
