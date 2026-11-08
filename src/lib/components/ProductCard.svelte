@@ -1,7 +1,7 @@
 <script>
   import { formatPrice } from '#lib/format.js';
   import { onImageError } from '#lib/images.js';
-  import { categories } from '#lib/products.js';
+  import { categories, stockBajo } from '#lib/products.js';
 
   let { product } = $props();
 </script>
@@ -13,6 +13,12 @@
         class="absolute top-3 left-3 z-10 rounded-full bg-cacao/85 px-3 py-1 text-xs tracking-wide text-crema"
       >
         Agotado
+      </span>
+    {:else if stockBajo(product)}
+      <span
+        class="absolute top-3 left-3 z-10 rounded-full bg-rosa-oscuro/90 px-3 py-1 text-xs tracking-wide text-white"
+      >
+        Últimas unidades
       </span>
     {/if}
     <img
