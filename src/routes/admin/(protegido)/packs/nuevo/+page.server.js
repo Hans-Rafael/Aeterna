@@ -10,7 +10,7 @@ export async function load() {
 export const actions = {
   default: async ({ request }) => {
     const form = await request.formData();
-    const resultado = await leerPackForm(form, { requireFoto: true, slug: null });
+    const resultado = await leerPackForm(form, { requireFoto: false, slug: null });
     if (resultado.error) return fail(400, { error: resultado.error });
 
     await guardarPack({ id: null, fields: resultado.fields, componentes: resultado.componentes });
