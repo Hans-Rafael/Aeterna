@@ -62,7 +62,7 @@
         <span class="text-cacao/70">Aroma o función</span>
         <input name="fragrance" required class="field" list="aromas" />
         <datalist id="aromas">
-          {#each aromas as a (a)}
+          {#each aromas[categoria] as a (a)}
             <option value={a}></option>
           {/each}
         </datalist>
