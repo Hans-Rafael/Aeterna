@@ -4,15 +4,15 @@
 
 <header class="sticky top-0 z-40 border-b border-cacao/10 bg-crema/90 backdrop-blur">
   <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
-    <a href="/" class="font-serif text-2xl tracking-[0.3em] text-cacao">AETERNA</a>
+    <a href="/" class="touch-48 font-serif text-2xl tracking-[0.3em] text-cacao">AETERNA</a>
 
     <nav class="flex items-center gap-5 text-sm text-cacao/80 sm:gap-7">
-      <a href="/tienda" class="hover:text-rosa-oscuro">Tienda</a>
+      <a href="/tienda" class="touch-48 hover:text-rosa-oscuro">Tienda</a>
       <a href="/tienda?categoria=jabon" class="hidden hover:text-rosa-oscuro sm:inline">Jabones</a>
       <a href="/tienda?categoria=vela" class="hidden hover:text-rosa-oscuro sm:inline">Velas</a>
       <a
         href="/carrito"
-        class="flex items-center gap-2 rounded-full border border-cacao/20 px-4 py-1.5 hover:border-rosa-oscuro hover:text-rosa-oscuro"
+        class="touch-48 flex items-center gap-2 rounded-full border border-cacao/20 px-4 py-1.5 hover:border-rosa-oscuro hover:text-rosa-oscuro"
       >
         Carrito
         <span

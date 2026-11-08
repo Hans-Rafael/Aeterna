@@ -17,3 +17,17 @@
     @apply bg-crema font-sans text-cacao antialiased;
   }
 }
+
+/* Material 3: el área de toque mide al menos 48x48 aunque el botón se vea más pequeño. */
+@utility touch-48 {
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 48px);
+    height: max(100%, 48px);
+    transform: translate(-50%, -50%);
+  }
+}
