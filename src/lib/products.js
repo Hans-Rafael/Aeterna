@@ -8,7 +8,8 @@
  * @property {string} slug
  * @property {string} name
  * @property {'jabon' | 'vela' | 'pack'} category
- * @property {string} fragrance
+ * @property {string} fragrance aroma o función (Rosa, Menta, Exfoliante…)
+ * @property {string} [shape] forma (ver `formas`)
  * @property {string} description
  * @property {number} price
  * @property {string} image
@@ -25,6 +26,7 @@
 export const products = [
   {
     slug: 'jabon-rosa-circular',
+    shape: 'circular',
     name: 'Rosa Circular',
     category: 'jabon',
     fragrance: 'Rosa',
@@ -35,6 +37,7 @@ export const products = [
   },
   {
     slug: 'jabon-rosa-rectangular',
+    shape: 'rectangular',
     name: 'Rosa Rectangular',
     category: 'jabon',
     fragrance: 'Rosa',
@@ -44,6 +47,7 @@ export const products = [
   },
   {
     slug: 'jabon-lavanda-circular',
+    shape: 'circular',
     name: 'Lavanda Circular',
     category: 'jabon',
     fragrance: 'Lavanda',
@@ -54,6 +58,7 @@ export const products = [
   },
   {
     slug: 'jabon-lavanda-masaje',
+    shape: 'masajeador',
     name: 'Lavanda Masaje',
     category: 'jabon',
     fragrance: 'Lavanda',
@@ -63,6 +68,7 @@ export const products = [
   },
   {
     slug: 'jabon-vainilla-circular',
+    shape: 'circular',
     name: 'Vainilla Circular',
     category: 'jabon',
     fragrance: 'Vainilla',
@@ -72,6 +78,7 @@ export const products = [
   },
   {
     slug: 'jabon-vainilla-rectangular',
+    shape: 'rectangular',
     name: 'Vainilla Rectangular',
     category: 'jabon',
     fragrance: 'Vainilla',
@@ -90,6 +97,7 @@ export const products = [
   },
   {
     slug: 'jabon-coco-rectangular',
+    shape: 'rectangular',
     name: 'Coco Rectangular',
     category: 'jabon',
     fragrance: 'Coco',
@@ -109,6 +117,7 @@ export const products = [
   },
   {
     slug: 'vela-rosa-perrito',
+    shape: 'perrito',
     name: 'Vela Rosa Perrito',
     category: 'vela',
     fragrance: 'Rosa',
@@ -118,6 +127,7 @@ export const products = [
   },
   {
     slug: 'vela-vainilla-perrito',
+    shape: 'perrito',
     name: 'Vela Vainilla Perrito',
     category: 'vela',
     fragrance: 'Vainilla',
@@ -128,6 +138,7 @@ export const products = [
   },
   {
     slug: 'vela-rosa-gatito',
+    shape: 'gatito',
     name: 'Vela Rosa Gatito',
     category: 'vela',
     fragrance: 'Rosa',
@@ -149,16 +160,59 @@ export function getProduct(slug) {
   return products.find((p) => p.slug === slug);
 }
 
+/** Formas disponibles por categoría. */
+export const formas = {
+  jabon: ['gatito', 'perrito', 'rectangular', 'circular', 'masajeador'],
+  vela: ['gatito', 'perrito', 'rectangular'],
+};
+
+/** @type {Record<string, string>} */
+export const formaLabels = {
+  gatito: 'Gatito',
+  perrito: 'Perrito',
+  rectangular: 'Rectangular',
+  circular: 'Circular',
+  masajeador: 'Masajeador',
+};
+
+/** Aromas y funciones sugeridas (en el admin se puede escribir otro). */
+export const aromas = [
+  'Rosa',
+  'Lavanda',
+  'Vainilla',
+  'Coco',
+  'Manzana',
+  'Limón-Manzana',
+  'Menta',
+  'Incienso',
+  'Blanqueador',
+  'Exfoliante',
+];
+
+/** @param {string} texto */
+const clave = (texto) =>
+  texto
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[\s_]+/g, '-');
+
 /**
- * Qué aporta cada jabón a la piel, según su aroma.
+ * Qué aporta cada jabón a la piel, según su aroma o función.
  * ⚠️ Texto de ejemplo: revisalo y ajustalo a los ingredientes reales de cada jabón.
  * @type {Record<string, string[]>}
  */
 const beneficiosJabon = {
-  Rosa: ['Hidratante y suave', 'Ideal para pieles sensibles', 'Aroma floral delicado'],
-  Lavanda: ['Relajante', 'Calma la piel', 'Ideal para la ducha de la noche'],
-  Vainilla: ['Nutritivo y suavizante', 'Deja la piel suave', 'Aroma cálido y dulce'],
-  Coco: ['Muy hidratante', 'Ideal para pieles secas', 'Aroma tropical y fresco'],
+  rosa: ['Hidratante y suave', 'Ideal para pieles sensibles', 'Aroma floral delicado'],
+  lavanda: ['Relajante', 'Calma la piel', 'Ideal para la ducha de la noche'],
+  vainilla: ['Nutritivo y suavizante', 'Deja la piel suave', 'Aroma cálido y dulce'],
+  coco: ['Muy hidratante', 'Ideal para pieles secas', 'Aroma tropical y fresco'],
+  manzana: ['Refrescante y suave', 'Limpia sin resecar', 'Aroma frutal fresco'],
+  'limon-manzana': ['Cítrico y energizante', 'Deja la piel fresca', 'Aroma frutal vibrante'],
+  menta: ['Refrescante', 'Sensación de frescura', 'Ideal para la mañana'],
+  incienso: ['Aroma cálido y envolvente', 'Ideal para relajarte', 'Ambiente sereno'],
+  blanqueador: ['Ayuda a unificar el tono de la piel', 'Deja la piel luminosa'],
+  exfoliante: ['Elimina células muertas', 'Deja la piel suave y renovada'],
 };
 
 /**
@@ -168,5 +222,5 @@ const beneficiosJabon = {
  */
 export function getBeneficios(product) {
   if (product.category !== 'jabon') return [];
-  return beneficiosJabon[product.fragrance] ?? [];
+  return beneficiosJabon[clave(product.fragrance)] ?? [];
 }

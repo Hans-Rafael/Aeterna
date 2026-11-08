@@ -1,4 +1,5 @@
 import { error, fail, redirect } from '@sveltejs/kit';
+import { formas } from '#lib/products.js';
 import {
   getProductById,
   publicImageUrl,
@@ -35,11 +36,18 @@ export const actions = {
     const fragrance = String(form.get('fragrance') ?? '').trim();
     const description = String(form.get('description') ?? '').trim();
     const category = String(form.get('category') ?? '');
+    const shape = String(form.get('shape') ?? '');
     const price = Number.parseInt(String(form.get('price') ?? ''), 10);
     const stock = Number.parseInt(String(form.get('stock') ?? '0'), 10);
 
     if (!name || !fragrance) return fail(400, { error: 'Nombre y fragancia son obligatorios.' });
     if (!['jabon', 'vela'].includes(category)) return fail(400, { error: 'Categoría inválida.' });
+    const formasValidas = /** @type {string[]} */ (
+      formas[/** @type {keyof typeof formas} */ (category)]
+    );
+    if (shape && !formasValidas.includes(shape)) {
+      return fail(400, { error: 'Esa forma no existe para la categoría elegida.' });
+    }
     if (!Number.isInteger(price) || price < 0) return fail(400, { error: 'Precio inválido.' });
     if (!Number.isInteger(stock) || stock < 0) return fail(400, { error: 'Stock inválido.' });
 
@@ -47,6 +55,7 @@ export const actions = {
     const cambios = {
       name,
       fragrance,
+      shape: shape || null,
       description,
       category,
       price,
