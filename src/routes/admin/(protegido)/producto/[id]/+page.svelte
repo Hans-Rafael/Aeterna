@@ -50,6 +50,9 @@
                   class="aspect-square w-full rounded-xl object-cover"
                 />
                 <label class="flex items-center gap-1">
+                  <input type="checkbox" name="hacer_principal" value={extra.path} /> Hacer principal
+                </label>
+                <label class="flex items-center gap-1">
                   <input type="checkbox" name="quitar_extra" value={extra.path} /> Quitar
                 </label>
               </li>
