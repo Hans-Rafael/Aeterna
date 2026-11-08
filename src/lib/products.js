@@ -88,6 +88,7 @@ export const products = [
   },
   {
     slug: 'jabon-vainilla',
+    shape: 'circular',
     name: 'Vainilla Clásico',
     category: 'jabon',
     fragrance: 'Vainilla',
@@ -107,6 +108,7 @@ export const products = [
   },
   {
     slug: 'vela-lavanda',
+    shape: 'cubica',
     name: 'Vela Lavanda',
     category: 'vela',
     fragrance: 'Lavanda',
@@ -163,7 +165,7 @@ export function getProduct(slug) {
 /** Formas disponibles por categoría. */
 export const formas = {
   jabon: ['gatito', 'perrito', 'rectangular', 'circular', 'masajeador'],
-  vela: ['gatito', 'perrito', 'rectangular'],
+  vela: ['gatito', 'perrito', 'rectangular', 'cubica'],
 };
 
 /** @type {Record<string, string>} */
@@ -173,6 +175,7 @@ export const formaLabels = {
   rectangular: 'Rectangular',
   circular: 'Circular',
   masajeador: 'Masajeador',
+  cubica: 'Cúbica',
 };
 
 /** Aromas y funciones sugeridas (en el admin se puede escribir otro). */
