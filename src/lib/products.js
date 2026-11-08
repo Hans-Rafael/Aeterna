@@ -157,6 +157,19 @@ export const categories = {
   pack: { label: 'Packs', singular: 'Pack' },
 };
 
+/** Con este stock o menos se avisa "Últimas unidades". */
+export const UMBRAL_STOCK_BAJO = 3;
+
+/**
+ * true si queda poco stock (pero no está agotado).
+ * @param {Product} product
+ */
+export function stockBajo(product) {
+  return (
+    typeof product.stock === 'number' && product.stock > 0 && product.stock <= UMBRAL_STOCK_BAJO
+  );
+}
+
 /** @param {string} slug @returns {Product | undefined} */
 export function getProduct(slug) {
   return products.find((p) => p.slug === slug);
@@ -180,7 +193,7 @@ export const formaLabels = {
 
 /**
  * Aromas y funciones sugeridas por categoría (en el admin se puede escribir otro).
- * Blanqueador y exfoliante son funciones de jabón; en velas el cítrico es solo Limón.
+ * Blanqueador y exfoliante son funciones de jabón; el cítrico es solo Limón.
  */
 export const aromas = {
   jabon: [
@@ -189,7 +202,7 @@ export const aromas = {
     'Vainilla',
     'Coco',
     'Manzana',
-    'Limón-Manzana',
+    'Limón',
     'Menta',
     'Incienso',
     'Blanqueador',
@@ -217,7 +230,7 @@ const beneficiosJabon = {
   vainilla: ['Nutritivo y suavizante', 'Deja la piel suave', 'Aroma cálido y dulce'],
   coco: ['Muy hidratante', 'Ideal para pieles secas', 'Aroma tropical y fresco'],
   manzana: ['Refrescante y suave', 'Limpia sin resecar', 'Aroma frutal fresco'],
-  'limon-manzana': ['Cítrico y energizante', 'Deja la piel fresca', 'Aroma frutal vibrante'],
+  limon: ['Cítrico y energizante', 'Deja la piel fresca', 'Aroma cítrico vibrante'],
   menta: ['Refrescante', 'Sensación de frescura', 'Ideal para la mañana'],
   incienso: ['Aroma cálido y envolvente', 'Ideal para relajarte', 'Ambiente sereno'],
   blanqueador: [

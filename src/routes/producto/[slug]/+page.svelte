@@ -3,7 +3,13 @@
   import ProductCard from '#lib/components/ProductCard.svelte';
   import { formatPrice } from '#lib/format.js';
   import { onImageError } from '#lib/images.js';
-  import { categories, formaLabels, getBeneficios, getIngredientes } from '#lib/products.js';
+  import {
+    categories,
+    formaLabels,
+    getBeneficios,
+    getIngredientes,
+    stockBajo,
+  } from '#lib/products.js';
 
   let { data } = $props();
   let product = $derived(data.product);
@@ -23,6 +29,7 @@
   let agregado = $state(false);
 
   let aviso = $state('');
+  let ultimas = $derived(stockBajo(product));
   let agotado = $derived(typeof product.stock === 'number' && product.stock <= 0);
 
   function agregar() {
@@ -144,6 +151,11 @@
         {agregado ? 'Agregado ✓' : 'Agregar al carrito'}
       </button>
     </div>
+    {#if ultimas && !aviso}
+      <p class="mt-3 text-sm text-rosa-oscuro">
+        {product.stock === 1 ? '¡Queda 1 unidad!' : `¡Últimas ${product.stock} unidades!`}
+      </p>
+    {/if}
     {#if agotado && !aviso}
       <p class="mt-3 text-sm text-rosa-oscuro">Agotado por el momento.</p>
     {/if}
