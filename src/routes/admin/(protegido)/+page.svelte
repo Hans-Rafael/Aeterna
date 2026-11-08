@@ -14,14 +14,23 @@
     data.products.filter((/** @type {any} */ p) => !p.is_pack && estadoStock(p.stock) !== 'ok')
   );
 
-  /** Orden de la tabla: columna y sentido. Sin elegir, se respeta el orden de carga. */
-  /** @type {{ col: 'name' | 'category' | 'shape' | 'fragrance' | 'price' | 'stock' | null, asc: boolean }} */
-  let orden = $state({ col: null, asc: true });
+  /** @typedef {'name' | 'category' | 'shape' | 'fragrance' | 'price' | 'stock'} Col */
+  /**
+   * Orden de la tabla: la primera entrada manda y las siguientes desempatan, así que se pueden
+   * combinar (clic en Aroma y luego en Categoría: por categoría, y dentro de cada una por aroma).
+   * Vacío: se respeta el orden de carga.
+   * @type {{ col: Col, asc: boolean }[]}
+   */
+  let orden = $state([]);
 
-  /** @param {'name' | 'category' | 'shape' | 'fragrance' | 'price' | 'stock'} col */
+  /** @param {Col} col */
   function ordenarPor(col) {
-    // Primer clic: de menor a mayor. Clic en la misma columna: se invierte.
-    orden = orden.col === col ? { col, asc: !orden.asc } : { col, asc: true };
+    // Clic en la columna principal: invierte el sentido. Otra columna: pasa a ser la principal
+    // (de menor a mayor) y la anterior queda como desempate.
+    orden =
+      orden[0]?.col === col
+        ? [{ col, asc: !orden[0].asc }, ...orden.slice(1)]
+        : [{ col, asc: true }, ...orden.filter((o) => o.col !== col)];
   }
 
   /** @type {{ col: 'name' | 'category' | 'shape' | 'fragrance' | 'price' | 'stock', titulo: string }[]} */
@@ -48,21 +57,25 @@
   }
 
   let productos = $derived.by(() => {
-    const { col, asc } = orden;
-    if (!col) return data.products;
-    const signo = asc ? 1 : -1;
+    if (!orden.length) return data.products;
     return [...data.products].sort((/** @type {any} */ a, /** @type {any} */ b) => {
-      // El stock de los packs sale de sus componentes: van siempre al final.
-      if (col === 'stock' && a.is_pack !== b.is_pack) return a.is_pack ? 1 : -1;
-      const va = valorOrden(a, col);
-      const vb = valorOrden(b, col);
-      // Los productos sin valor (p. ej. packs sin forma) van siempre al final.
-      if (va === '' || vb === '') return va === vb ? 0 : va === '' ? 1 : -1;
-      const cmp =
-        typeof va === 'number' && typeof vb === 'number'
-          ? va - vb
-          : String(va).localeCompare(String(vb), 'es');
-      return cmp * signo || a.name.localeCompare(b.name, 'es');
+      for (const { col, asc } of orden) {
+        // El stock de los packs sale de sus componentes: van siempre al final.
+        if (col === 'stock' && a.is_pack !== b.is_pack) return a.is_pack ? 1 : -1;
+        const va = valorOrden(a, col);
+        const vb = valorOrden(b, col);
+        // Los productos sin valor (p. ej. packs sin forma) van siempre al final.
+        if (va === '' || vb === '') {
+          if (va !== vb) return va === '' ? 1 : -1;
+          continue;
+        }
+        const cmp =
+          typeof va === 'number' && typeof vb === 'number'
+            ? va - vb
+            : String(va).localeCompare(String(vb), 'es');
+        if (cmp) return asc ? cmp : -cmp;
+      }
+      return a.name.localeCompare(b.name, 'es');
     });
   });
 </script>
@@ -121,16 +134,22 @@
           {#each columnas as { col, titulo } (col)}
             <th
               class="font-normal {col === 'name' ? 'px-4 py-3' : ''}"
-              aria-sort={orden.col === col ? (orden.asc ? 'ascending' : 'descending') : 'none'}
+              aria-sort={orden[0]?.col === col
+                ? orden[0].asc
+                  ? 'ascending'
+                  : 'descending'
+                : 'none'}
             >
               <button
                 type="button"
                 onclick={() => ordenarPor(col)}
-                class="hover:text-rosa-oscuro {orden.col === col ? 'text-cacao' : ''}"
+                class="hover:text-rosa-oscuro {orden[0]?.col === col ? 'text-cacao' : ''}"
                 title="Ordenar por {titulo.toLowerCase()}"
               >
                 {titulo}
-                <span class="text-xs">{orden.col === col ? (orden.asc ? '▲' : '▼') : '↕'}</span>
+                <span class="text-xs"
+                  >{orden[0]?.col === col ? (orden[0].asc ? '▲' : '▼') : '↕'}</span
+                >
               </button>
             </th>
           {/each}
