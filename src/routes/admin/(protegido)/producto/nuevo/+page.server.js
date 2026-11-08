@@ -28,14 +28,15 @@ export const actions = {
     if (!Number.isInteger(price) || price < 0) return fail(400, { error: 'Precio inválido.' });
     if (!Number.isInteger(stock) || stock < 0) return fail(400, { error: 'Stock inválido.' });
 
+    // La foto es opcional: sin foto el sitio muestra la imagen por defecto.
     const foto = form.get('foto');
-    if (!(foto instanceof File) || foto.size === 0) {
-      return fail(400, { error: 'Subí una foto del producto.' });
-    }
-    if (!TIPOS_FOTO.includes(foto.type)) {
+    const hayFoto = foto instanceof File && foto.size > 0;
+    if (hayFoto && !TIPOS_FOTO.includes(foto.type)) {
       return fail(400, { error: 'La foto debe ser JPG, PNG o WebP.' });
     }
-    if (foto.size > MAX_FOTO_BYTES) return fail(400, { error: 'La foto supera los 5 MB.' });
+    if (hayFoto && foto.size > MAX_FOTO_BYTES) {
+      return fail(400, { error: 'La foto supera los 5 MB.' });
+    }
 
     const slug = slugProducto(name);
     const id = await createProduct({
@@ -47,7 +48,8 @@ export const actions = {
       shape: shape || null,
       price,
       stock,
-      image_path: await uploadProductImage(foto, slug),
+      // Texto vacío = sin foto (la columna no admite null en el esquema original).
+      image_path: hayFoto ? await uploadProductImage(foto, slug) : '',
       featured: form.get('featured') === 'on',
       active: form.get('active') === 'on',
       delivery: true,
