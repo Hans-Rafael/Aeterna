@@ -60,13 +60,12 @@
     {/if}
     <label class="block text-sm">
       <span class="text-cacao/70"
-        >{imageUrl ? 'Cambiar foto' : 'Foto del pack'} (JPG, PNG o WebP, máx. 5 MB)</span
+        >{imageUrl ? 'Cambiar foto' : 'Foto del pack'} (opcional · JPG, PNG o WebP, máx. 5 MB)</span
       >
       <input
         type="file"
         name="foto"
         accept="image/jpeg,image/png,image/webp"
-        required={!imageUrl}
         class="mt-2 block w-full text-sm"
       />
     </label>
@@ -86,10 +85,10 @@
       <legend class="text-sm text-cacao/70">Productos del pack</legend>
       {#each filas as fila, i (i)}
         <div class="grid grid-cols-[1fr_5rem_auto] items-center gap-2">
-          <select name="componente" class="field">
+          <select name="componente" bind:value={fila.product_id} class="field">
             <option value="">Elegí un producto…</option>
             {#each candidatos as c (c.id)}
-              <option value={c.id} selected={fila.product_id === c.id}>
+              <option value={c.id}>
                 {c.name} (stock {c.stock})
               </option>
             {/each}

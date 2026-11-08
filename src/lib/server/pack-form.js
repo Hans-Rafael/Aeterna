@@ -62,6 +62,9 @@ export async function leerPackForm(form, { requireFoto, slug }) {
   if (!slug) fields.slug = slugFinal;
   if (hayFoto) {
     fields.image_path = await uploadProductImage(foto, slugFinal);
+  } else if (!slug) {
+    // Sin foto: la columna no admite null, así que se guarda vacío (la tienda usa una imagen de relleno).
+    fields.image_path = '';
   }
 
   return { error: null, fields, componentes };
