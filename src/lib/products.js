@@ -178,19 +178,25 @@ export const formaLabels = {
   cubica: 'Cúbica',
 };
 
-/** Aromas y funciones sugeridas (en el admin se puede escribir otro). */
-export const aromas = [
-  'Rosa',
-  'Lavanda',
-  'Vainilla',
-  'Coco',
-  'Manzana',
-  'Limón-Manzana',
-  'Menta',
-  'Incienso',
-  'Blanqueador',
-  'Exfoliante',
-];
+/**
+ * Aromas y funciones sugeridas por categoría (en el admin se puede escribir otro).
+ * Blanqueador y exfoliante son funciones de jabón; en velas el cítrico es solo Limón.
+ */
+export const aromas = {
+  jabon: [
+    'Rosa',
+    'Lavanda',
+    'Vainilla',
+    'Coco',
+    'Manzana',
+    'Limón-Manzana',
+    'Menta',
+    'Incienso',
+    'Blanqueador',
+    'Exfoliante',
+  ],
+  vela: ['Rosa', 'Lavanda', 'Vainilla', 'Coco', 'Manzana', 'Limón', 'Menta', 'Incienso'],
+};
 
 /** @param {string} texto */
 const clave = (texto) =>
