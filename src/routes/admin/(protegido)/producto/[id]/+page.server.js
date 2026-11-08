@@ -1,5 +1,5 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import { formas } from '#lib/products.js';
+import { formas, parseBeneficios } from '#lib/products.js';
 import {
   getProductById,
   publicImageUrl,
@@ -35,6 +35,9 @@ export const actions = {
     const name = String(form.get('name') ?? '').trim();
     const fragrance = String(form.get('fragrance') ?? '').trim();
     const description = String(form.get('description') ?? '').trim();
+    // Un beneficio por línea; se guardan sin líneas vacías.
+    const benefits = parseBeneficios(String(form.get('benefits') ?? '')).join('\n');
+    const ingredients = String(form.get('ingredients') ?? '').trim();
     const category = String(form.get('category') ?? '');
     const shape = String(form.get('shape') ?? '');
     const price = Number.parseInt(String(form.get('price') ?? ''), 10);
@@ -57,6 +60,8 @@ export const actions = {
       fragrance,
       shape: shape || null,
       description,
+      benefits,
+      ingredients,
       category,
       price,
       stock,

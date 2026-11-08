@@ -97,11 +97,11 @@
     </p>
 
     <p class="mt-6 font-serif text-3xl text-cacao">{formatPrice(product.price)}</p>
-    <p class="mt-4 leading-relaxed text-cacao/75">{product.description}</p>
+    <p class="mt-4 leading-relaxed whitespace-pre-line text-cacao/75">{product.description}</p>
 
     {#if beneficios.length}
       <div class="mt-4 text-sm text-cacao/80">
-        <p class="font-medium">Beneficios para tu piel:</p>
+        <p class="font-medium">Beneficios y características:</p>
         <ul class="mt-1 list-disc pl-5">
           {#each beneficios as beneficio (beneficio)}
             <li>{beneficio}</li>
