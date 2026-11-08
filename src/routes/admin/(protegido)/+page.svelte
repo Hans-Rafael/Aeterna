@@ -16,21 +16,19 @@
 
   /** @typedef {'name' | 'category' | 'shape' | 'fragrance' | 'price' | 'stock'} Col */
   /**
-   * Orden de la tabla: la primera entrada manda y las siguientes desempatan, así que se pueden
-   * combinar (clic en Aroma y luego en Categoría: por categoría, y dentro de cada una por aroma).
-   * Vacío: se respeta el orden de carga.
+   * Orden de la tabla, en el orden de los clics: la primera columna manda y cada una siguiente
+   * desempata dentro de la anterior (Categoría y luego Forma: por categoría y, dentro de cada
+   * una, por forma). Vacío: se respeta el orden de carga.
    * @type {{ col: Col, asc: boolean }[]}
    */
   let orden = $state([]);
 
   /** @param {Col} col */
   function ordenarPor(col) {
-    // Clic en la columna principal: invierte el sentido. Otra columna: pasa a ser la principal
-    // (de menor a mayor) y la anterior queda como desempate.
-    orden =
-      orden[0]?.col === col
-        ? [{ col, asc: !orden[0].asc }, ...orden.slice(1)]
-        : [{ col, asc: true }, ...orden.filter((o) => o.col !== col)];
+    // Columna nueva: se agrega al final (de menor a mayor). Ya elegida: se invierte su sentido.
+    orden = orden.some((o) => o.col === col)
+      ? orden.map((o) => (o.col === col ? { col, asc: !o.asc } : o))
+      : [...orden, { col, asc: true }];
   }
 
   /** @type {{ col: 'name' | 'category' | 'shape' | 'fragrance' | 'price' | 'stock', titulo: string }[]} */
@@ -127,6 +125,19 @@
     </div>
   {/if}
 
+  {#if orden.length}
+    <p class="mt-6 text-sm text-cacao/70">
+      Ordenado por: {orden
+        .map((o) => columnas.find((c) => c.col === o.col)?.titulo + (o.asc ? ' ▲' : ' ▼'))
+        .join(' → ')}
+      <button
+        type="button"
+        onclick={() => (orden = [])}
+        class="ml-2 text-rosa-oscuro underline underline-offset-4">Quitar orden</button
+      >
+    </p>
+  {/if}
+
   <div class="mt-8 overflow-x-auto rounded-2xl border border-cacao/10 bg-white">
     <table class="w-full text-sm">
       <thead class="bg-vainilla/30 text-left text-cacao/70">
@@ -143,12 +154,19 @@
               <button
                 type="button"
                 onclick={() => ordenarPor(col)}
-                class="hover:text-rosa-oscuro {orden[0]?.col === col ? 'text-cacao' : ''}"
+                class="hover:text-rosa-oscuro {orden.some((o) => o.col === col)
+                  ? 'text-cacao'
+                  : ''}"
                 title="Ordenar por {titulo.toLowerCase()}"
               >
                 {titulo}
                 <span class="text-xs"
-                  >{orden[0]?.col === col ? (orden[0].asc ? '▲' : '▼') : '↕'}</span
+                  >{(() => {
+                    const i = orden.findIndex((o) => o.col === col);
+                    return i < 0
+                      ? '↕'
+                      : `${orden[i].asc ? '▲' : '▼'}${orden.length > 1 ? i + 1 : ''}`;
+                  })()}</span
                 >
               </button>
             </th>
