@@ -2,6 +2,9 @@
   import { page } from '$app/state';
   import { formatPrice } from '#lib/format.js';
   import { formaLabels } from '#lib/products.js';
+  import EncabezadosOrdenables from '#lib/components/EncabezadosOrdenables.svelte';
+  import ResumenOrden from '#lib/components/ResumenOrden.svelte';
+  import { alternarOrden, ordenarFilas } from '#lib/orden-tabla.js';
 
   let { data } = $props();
   /** @type {Record<string, string>} */
@@ -10,19 +13,6 @@
   const UMBRAL_ALERTA = 3;
   /** @param {number} stock */
   const estadoStock = (stock) => (stock <= 0 ? 'sin' : stock <= UMBRAL_ALERTA ? 'bajo' : 'ok');
-  /** Productos a reponer, agrupados por categoría y forma. */
-  let enAlerta = $derived(
-    data.products
-      .filter((/** @type {any} */ p) => !p.is_pack && estadoStock(p.stock) !== 'ok')
-      .sort((/** @type {any} */ a, /** @type {any} */ b) =>
-        [
-          categorias[a.category].localeCompare(categorias[b.category], 'es'),
-          detalle(a.shape, formaLabels).localeCompare(detalle(b.shape, formaLabels), 'es'),
-          a.name.localeCompare(b.name, 'es'),
-        ].find((c) => c)
-      )
-  );
-
   /**
    * @param {string | undefined} valor
    * @param {Record<string, string>} etiquetas
@@ -31,24 +21,17 @@
     return valor ? (etiquetas[valor] ?? valor) : '';
   }
 
-  /** @typedef {'name' | 'category' | 'shape' | 'fragrance' | 'price' | 'stock'} Col */
   /**
-   * Orden de la tabla, en el orden de los clics: la primera columna manda y cada una siguiente
-   * desempata dentro de la anterior (Categoría y luego Forma: por categoría y, dentro de cada
-   * una, por forma). Vacío: se respeta el orden de carga.
-   * @type {{ col: Col, asc: boolean }[]}
+   * @param {any} p
+   * @param {import('#lib/orden-tabla.js').Col} col
    */
-  let orden = $state([]);
-
-  /** @param {Col} col */
-  function ordenarPor(col) {
-    // Columna nueva: se agrega al final (de menor a mayor). Ya elegida: se invierte su sentido.
-    orden = orden.some((o) => o.col === col)
-      ? orden.map((o) => (o.col === col ? { col, asc: !o.asc } : o))
-      : [...orden, { col, asc: true }];
+  function valorOrden(p, col) {
+    if (col === 'category') return categorias[p.category];
+    if (col === 'shape') return detalle(p.shape, formaLabels);
+    return p[col] ?? '';
   }
 
-  /** @type {{ col: 'name' | 'category' | 'shape' | 'fragrance' | 'price' | 'stock', titulo: string }[]} */
+  /** @type {{ col: import('#lib/orden-tabla.js').Col, titulo: string }[]} */
   const columnas = [
     { col: 'name', titulo: 'Producto' },
     { col: 'category', titulo: 'Categoría' },
@@ -57,42 +40,32 @@
     { col: 'price', titulo: 'Precio' },
     { col: 'stock', titulo: 'Stock' },
   ];
+  const columnasReponer = columnas.filter((c) => c.col !== 'price');
 
   /**
-   * @param {any} p
-   * @param {string} col
+   * Cada tabla tiene su propio orden, en el orden de los clics. Vacío: la de productos respeta
+   * el orden de carga y la de reponer se agrupa por categoría y forma.
+   * @type {import('#lib/orden-tabla.js').Criterio[]}
    */
-  function valorOrden(p, col) {
-    if (col === 'category') return categorias[p.category];
-    if (col === 'shape')
-      return p.shape
-        ? (formaLabels[/** @type {keyof typeof formaLabels} */ (p.shape)] ?? p.shape)
-        : '';
-    return p[col] ?? '';
-  }
+  let orden = $state([]);
+  /** @type {import('#lib/orden-tabla.js').Criterio[]} */
+  let ordenReponer = $state([]);
+  /** @type {import('#lib/orden-tabla.js').Criterio[]} */
+  const REPONER_POR_DEFECTO = [
+    { col: 'category', asc: true },
+    { col: 'shape', asc: true },
+  ];
 
-  let productos = $derived.by(() => {
-    if (!orden.length) return data.products;
-    return [...data.products].sort((/** @type {any} */ a, /** @type {any} */ b) => {
-      for (const { col, asc } of orden) {
-        // El stock de los packs sale de sus componentes: van siempre al final.
-        if (col === 'stock' && a.is_pack !== b.is_pack) return a.is_pack ? 1 : -1;
-        const va = valorOrden(a, col);
-        const vb = valorOrden(b, col);
-        // Los productos sin valor (p. ej. packs sin forma) van siempre al final.
-        if (va === '' || vb === '') {
-          if (va !== vb) return va === '' ? 1 : -1;
-          continue;
-        }
-        const cmp =
-          typeof va === 'number' && typeof vb === 'number'
-            ? va - vb
-            : String(va).localeCompare(String(vb), 'es');
-        if (cmp) return asc ? cmp : -cmp;
-      }
-      return a.name.localeCompare(b.name, 'es');
-    });
-  });
+  let productos = $derived(
+    orden.length ? ordenarFilas(data.products, orden, valorOrden) : data.products
+  );
+  let enAlerta = $derived(
+    ordenarFilas(
+      data.products.filter((/** @type {any} */ p) => !p.is_pack && estadoStock(p.stock) !== 'ok'),
+      ordenReponer.length ? ordenReponer : REPONER_POR_DEFECTO,
+      valorOrden
+    )
+  );
 </script>
 
 <svelte:head>
@@ -132,15 +105,21 @@
   {#if enAlerta.length > 0}
     <div class="mt-6 rounded-2xl bg-rosa/30 p-4 text-sm text-cacao">
       <p class="font-medium">Stock para reponer ({enAlerta.length})</p>
+      <ResumenOrden
+        columnas={columnasReponer}
+        orden={ordenReponer}
+        limpiar={() => (ordenReponer = [])}
+      />
       <div class="mt-3 overflow-x-auto">
         <table class="w-full text-left">
           <thead class="text-cacao/60">
             <tr>
-              <th class="py-1 pr-4 font-normal">Producto</th>
-              <th class="py-1 pr-4 font-normal">Categoría</th>
-              <th class="py-1 pr-4 font-normal">Forma</th>
-              <th class="py-1 pr-4 font-normal">Aroma</th>
-              <th class="py-1 font-normal">Stock</th>
+              <EncabezadosOrdenables
+                columnas={columnasReponer}
+                orden={ordenReponer}
+                alternar={(c) => (ordenReponer = alternarOrden(ordenReponer, c))}
+                claseNombre="py-1 pr-4"
+              />
             </tr>
           </thead>
           <tbody>
@@ -159,52 +138,18 @@
     </div>
   {/if}
 
-  {#if orden.length}
-    <p class="mt-6 text-sm text-cacao/70">
-      Ordenado por: {orden
-        .map((o) => columnas.find((c) => c.col === o.col)?.titulo + (o.asc ? ' ▲' : ' ▼'))
-        .join(' → ')}
-      <button
-        type="button"
-        onclick={() => (orden = [])}
-        class="ml-2 text-rosa-oscuro underline underline-offset-4">Quitar orden</button
-      >
-    </p>
-  {/if}
+  <ResumenOrden {columnas} {orden} limpiar={() => (orden = [])} />
 
   <div class="mt-8 overflow-x-auto rounded-2xl border border-cacao/10 bg-white">
     <table class="w-full text-sm">
       <thead class="bg-vainilla/30 text-left text-cacao/70">
         <tr>
-          {#each columnas as { col, titulo } (col)}
-            <th
-              class="font-normal {col === 'name' ? 'px-4 py-3' : ''}"
-              aria-sort={!orden.some((o) => o.col === col)
-                ? 'none'
-                : orden.find((o) => o.col === col)?.asc
-                  ? 'ascending'
-                  : 'descending'}
-            >
-              <button
-                type="button"
-                onclick={() => ordenarPor(col)}
-                class="hover:text-rosa-oscuro {orden.some((o) => o.col === col)
-                  ? 'text-cacao'
-                  : ''}"
-                title="Ordenar por {titulo.toLowerCase()}"
-              >
-                {titulo}
-                <span class="text-xs"
-                  >{(() => {
-                    const i = orden.findIndex((o) => o.col === col);
-                    return i < 0
-                      ? '↕'
-                      : `${orden[i].asc ? '▲' : '▼'}${orden.length > 1 ? i + 1 : ''}`;
-                  })()}</span
-                >
-              </button>
-            </th>
-          {/each}
+          <EncabezadosOrdenables
+            {columnas}
+            {orden}
+            alternar={(c) => (orden = alternarOrden(orden, c))}
+            claseNombre="px-4 py-3"
+          />
           <th class="font-normal">Estado</th>
           <th></th>
         </tr>
