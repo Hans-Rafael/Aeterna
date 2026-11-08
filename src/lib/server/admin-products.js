@@ -109,3 +109,28 @@ export async function guardarPack({ id, fields, componentes }) {
   if (errorComp) throw errorComp;
   return /** @type {string} */ (packId);
 }
+
+/**
+ * Slug legible con un sufijo aleatorio, para que dos productos con el mismo nombre no choquen.
+ * @param {string} texto
+ */
+export function slugProducto(texto) {
+  const base = texto
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+  return `${base || 'producto'}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+/**
+ * Crea un producto nuevo y devuelve su id.
+ * @param {Record<string, unknown>} fields
+ * @returns {Promise<string>}
+ */
+export async function createProduct(fields) {
+  const { data, error } = await adminClient().from('products').insert(fields).select('id').single();
+  if (error) throw error;
+  return data.id;
+}
