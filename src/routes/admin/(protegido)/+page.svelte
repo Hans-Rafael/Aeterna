@@ -10,9 +10,26 @@
   const UMBRAL_ALERTA = 3;
   /** @param {number} stock */
   const estadoStock = (stock) => (stock <= 0 ? 'sin' : stock <= UMBRAL_ALERTA ? 'bajo' : 'ok');
+  /** Productos a reponer, agrupados por categoría y forma. */
   let enAlerta = $derived(
-    data.products.filter((/** @type {any} */ p) => !p.is_pack && estadoStock(p.stock) !== 'ok')
+    data.products
+      .filter((/** @type {any} */ p) => !p.is_pack && estadoStock(p.stock) !== 'ok')
+      .sort((/** @type {any} */ a, /** @type {any} */ b) =>
+        [
+          categorias[a.category].localeCompare(categorias[b.category], 'es'),
+          detalle(a.shape, formaLabels).localeCompare(detalle(b.shape, formaLabels), 'es'),
+          a.name.localeCompare(b.name, 'es'),
+        ].find((c) => c)
+      )
   );
+
+  /**
+   * @param {string | undefined} valor
+   * @param {Record<string, string>} etiquetas
+   */
+  function detalle(valor, etiquetas) {
+    return valor ? (etiquetas[valor] ?? valor) : '';
+  }
 
   /** @typedef {'name' | 'category' | 'shape' | 'fragrance' | 'price' | 'stock'} Col */
   /**
@@ -115,13 +132,30 @@
   {#if enAlerta.length > 0}
     <div class="mt-6 rounded-2xl bg-rosa/30 p-4 text-sm text-cacao">
       <p class="font-medium">Stock para reponer ({enAlerta.length})</p>
-      <ul class="mt-2 list-disc space-y-1 pl-5">
-        {#each enAlerta as p (p.id)}
-          <li>
-            {p.name}: {p.stock <= 0 ? 'sin stock' : `quedan ${p.stock}`}
-          </li>
-        {/each}
-      </ul>
+      <div class="mt-3 overflow-x-auto">
+        <table class="w-full text-left">
+          <thead class="text-cacao/60">
+            <tr>
+              <th class="py-1 pr-4 font-normal">Producto</th>
+              <th class="py-1 pr-4 font-normal">Categoría</th>
+              <th class="py-1 pr-4 font-normal">Forma</th>
+              <th class="py-1 pr-4 font-normal">Aroma</th>
+              <th class="py-1 font-normal">Stock</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each enAlerta as p (p.id)}
+              <tr class="border-t border-cacao/10">
+                <td class="py-1 pr-4">{p.name}</td>
+                <td class="py-1 pr-4">{categorias[p.category]}</td>
+                <td class="py-1 pr-4">{detalle(p.shape, formaLabels) || '—'}</td>
+                <td class="py-1 pr-4">{p.fragrance || '—'}</td>
+                <td class="py-1">{p.stock <= 0 ? 'sin stock' : `quedan ${p.stock}`}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
     </div>
   {/if}
 
@@ -145,11 +179,11 @@
           {#each columnas as { col, titulo } (col)}
             <th
               class="font-normal {col === 'name' ? 'px-4 py-3' : ''}"
-              aria-sort={orden[0]?.col === col
-                ? orden[0].asc
+              aria-sort={!orden.some((o) => o.col === col)
+                ? 'none'
+                : orden.find((o) => o.col === col)?.asc
                   ? 'ascending'
-                  : 'descending'
-                : 'none'}
+                  : 'descending'}
             >
               <button
                 type="button"
