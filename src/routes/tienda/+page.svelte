@@ -115,112 +115,123 @@
   <title>{titulo} · Aeterna</title>
 </svelte:head>
 
-<section class="mx-auto max-w-6xl px-4 pt-8">
-  <div class="text-center">
-    <p class="text-xs tracking-[0.4em] text-rosa-oscuro uppercase">Colección</p>
-    <h1 class="mt-2 font-serif text-4xl text-cacao">{titulo}</h1>
-  </div>
+<section class="mx-auto max-w-6xl px-4 pt-8 lg:pt-5">
+  <!-- Filtros: en PC grande se reparten en dos filas (título, categorías y selectores / aromas y contador). -->
+  <div
+    class="flex flex-col lg:grid lg:grid-cols-[auto_auto_1fr_auto] lg:items-center lg:gap-x-5 lg:gap-y-2"
+  >
+    <div class="text-center lg:col-start-1 lg:row-start-1 lg:text-left">
+      <p class="text-xs tracking-[0.4em] text-rosa-oscuro uppercase lg:hidden">Colección</p>
+      <h1 class="mt-2 font-serif text-4xl text-cacao lg:mt-0 lg:text-3xl">{titulo}</h1>
+    </div>
 
-  <div class="mt-5 flex flex-wrap justify-center gap-2">
-    {#each filters as f (f.label)}
-      {@const activo = categoria === f.value}
-      <a
-        href={urlTienda({ categoria: f.value, pagina: null })}
-        class="touch-48 rounded-full border px-5 py-2 text-sm transition {activo
-          ? 'border-cacao bg-cacao text-crema'
-          : 'border-cacao/20 text-cacao/70 hover:border-rosa-oscuro hover:text-rosa-oscuro'}"
-      >
-        {f.label}
-      </a>
-    {/each}
-  </div>
-
-  {#if aromasDisponibles.length > 1}
-    <div class="mt-2 hidden flex-wrap justify-center gap-2 text-xs sm:flex">
-      <span class="self-center text-cacao/60">Aroma o función:</span>
-      <a
-        href={urlTienda({ forma, aroma: null })}
-        class="touch-48 rounded-full border px-4 py-1.5 {aroma === null
-          ? 'border-rosa-oscuro text-rosa-oscuro'
-          : 'border-cacao/20 text-cacao/70 hover:border-rosa-oscuro'}">Todos</a
-      >
-      {#each aromasDisponibles as a (a)}
+    <div
+      class="mt-5 flex flex-wrap justify-center gap-2 lg:col-start-2 lg:row-start-1 lg:mt-0 lg:justify-start"
+    >
+      {#each filters as f (f.label)}
+        {@const activo = categoria === f.value}
         <a
-          href={urlTienda({ forma, aroma: a })}
-          class="touch-48 rounded-full border px-4 py-1.5 {aroma === a
-            ? 'border-rosa-oscuro text-rosa-oscuro'
-            : 'border-cacao/20 text-cacao/70 hover:border-rosa-oscuro'}">{a}</a
+          href={urlTienda({ categoria: f.value, pagina: null })}
+          class="touch-48 rounded-full border px-5 py-2 text-sm transition {activo
+            ? 'border-cacao bg-cacao text-crema'
+            : 'border-cacao/20 text-cacao/70 hover:border-rosa-oscuro hover:text-rosa-oscuro'}"
         >
+          {f.label}
+        </a>
       {/each}
     </div>
-  {/if}
 
-  <div
-    class="mt-4 flex flex-col gap-3 text-sm text-cacao/70 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
-  >
-    <div class="order-2 flex items-center justify-between gap-4 sm:order-1 sm:justify-start">
-      <p>{pag.total} {pag.total === 1 ? 'producto' : 'productos'}</p>
-      <label class="flex min-h-12 cursor-pointer items-center gap-2 sm:min-h-0">
-        <input
-          type="checkbox"
-          checked={ocultarAgotados}
-          onchange={cambiarOcultar}
-          class="h-5 w-5 accent-rosa-oscuro"
-        />
-        Ocultar agotados
-      </label>
-    </div>
+    {#if aromasDisponibles.length > 1}
+      <div
+        class="mt-2 hidden flex-wrap justify-center gap-2 text-xs sm:flex lg:col-span-3 lg:col-start-1 lg:row-start-2 lg:mt-0 lg:justify-start"
+      >
+        <span class="self-center text-cacao/60">Aroma o función:</span>
+        <a
+          href={urlTienda({ forma, aroma: null })}
+          class="touch-48 rounded-full border px-4 py-1.5 {aroma === null
+            ? 'border-rosa-oscuro text-rosa-oscuro'
+            : 'border-cacao/20 text-cacao/70 hover:border-rosa-oscuro'}">Todos</a
+        >
+        {#each aromasDisponibles as a (a)}
+          <a
+            href={urlTienda({ forma, aroma: a })}
+            class="touch-48 rounded-full border px-4 py-1.5 {aroma === a
+              ? 'border-rosa-oscuro text-rosa-oscuro'
+              : 'border-cacao/20 text-cacao/70 hover:border-rosa-oscuro'}">{a}</a
+          >
+        {/each}
+      </div>
+    {/if}
+
     <div
-      class="order-1 flex flex-col gap-2 sm:order-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-4"
+      class="mt-4 flex flex-col gap-3 text-sm text-cacao/70 sm:flex-row sm:items-center sm:justify-between sm:gap-4 lg:contents"
     >
-      {#if formasDisponibles.length}
+      <div
+        class="order-2 flex items-center justify-between gap-4 sm:order-1 sm:justify-start lg:order-none lg:col-start-4 lg:row-start-2 lg:justify-self-end"
+      >
+        <p>{pag.total} {pag.total === 1 ? 'producto' : 'productos'}</p>
+        <label class="flex min-h-12 cursor-pointer items-center gap-2 sm:min-h-0">
+          <input
+            type="checkbox"
+            checked={ocultarAgotados}
+            onchange={cambiarOcultar}
+            class="h-5 w-5 accent-rosa-oscuro"
+          />
+          Ocultar agotados
+        </label>
+      </div>
+      <div
+        class="order-1 flex flex-col gap-2 sm:order-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-4 lg:order-none lg:col-span-2 lg:col-start-3 lg:row-start-1 lg:flex-nowrap lg:justify-self-end"
+      >
+        {#if formasDisponibles.length}
+          <label class="flex items-center gap-2">
+            <span class="w-32 shrink-0 sm:w-auto">Forma</span>
+            <select
+              class="min-w-0 flex-1 rounded-full border border-cacao/20 bg-white px-4 py-2 min-h-12 text-cacao sm:min-h-0 focus:outline-2 sm:flex-none focus:outline-rosa-oscuro"
+              value={forma ?? ''}
+              onchange={cambiarForma}
+            >
+              <option value="">Todas</option>
+              {#each formasDisponibles as f (f)}
+                <option value={f}>{formaLabels[f] ?? f}</option>
+              {/each}
+            </select>
+          </label>
+        {/if}
+        {#if aromasDisponibles.length > 1}
+          <label class="flex items-center gap-2 sm:hidden">
+            <span class="w-32 shrink-0">Aroma o función</span>
+            <select
+              class="min-h-12 min-w-0 flex-1 rounded-full border border-cacao/20 bg-white px-4 py-2 text-cacao focus:outline-2 focus:outline-rosa-oscuro"
+              value={aroma ?? ''}
+              onchange={cambiarAroma}
+            >
+              <option value="">Todos</option>
+              {#each aromasDisponibles as a (a)}
+                <option value={a}>{a}</option>
+              {/each}
+            </select>
+          </label>
+        {/if}
         <label class="flex items-center gap-2">
-          <span class="w-32 shrink-0 sm:w-auto">Forma</span>
+          <span class="w-32 shrink-0 sm:w-auto">Ordenar por</span>
           <select
             class="min-w-0 flex-1 rounded-full border border-cacao/20 bg-white px-4 py-2 min-h-12 text-cacao sm:min-h-0 focus:outline-2 sm:flex-none focus:outline-rosa-oscuro"
-            value={forma ?? ''}
-            onchange={cambiarForma}
+            value={orden}
+            onchange={cambiarOrden}
           >
-            <option value="">Todas</option>
-            {#each formasDisponibles as f (f)}
-              <option value={f}>{formaLabels[f] ?? f}</option>
+            {#each ORDENES as o (o.value)}
+              <option value={o.value}>{o.label}</option>
             {/each}
           </select>
         </label>
-      {/if}
-      {#if aromasDisponibles.length > 1}
-        <label class="flex items-center gap-2 sm:hidden">
-          <span class="w-32 shrink-0">Aroma o función</span>
-          <select
-            class="min-h-12 min-w-0 flex-1 rounded-full border border-cacao/20 bg-white px-4 py-2 text-cacao focus:outline-2 focus:outline-rosa-oscuro"
-            value={aroma ?? ''}
-            onchange={cambiarAroma}
-          >
-            <option value="">Todos</option>
-            {#each aromasDisponibles as a (a)}
-              <option value={a}>{a}</option>
-            {/each}
-          </select>
-        </label>
-      {/if}
-      <label class="flex items-center gap-2">
-        <span class="w-32 shrink-0 sm:w-auto">Ordenar por</span>
-        <select
-          class="min-w-0 flex-1 rounded-full border border-cacao/20 bg-white px-4 py-2 min-h-12 text-cacao sm:min-h-0 focus:outline-2 sm:flex-none focus:outline-rosa-oscuro"
-          value={orden}
-          onchange={cambiarOrden}
-        >
-          {#each ORDENES as o (o.value)}
-            <option value={o.value}>{o.label}</option>
-          {/each}
-        </select>
-      </label>
+      </div>
     </div>
   </div>
 
   <div class="mt-4 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
     {#each pag.items as product (product.slug)}
-      <ProductCard {product} />
+      <ProductCard {product} compacta />
     {:else}
       <p class="col-span-full py-10 text-center text-cacao/60">
         No hay productos en esta categoría.
@@ -229,7 +240,10 @@
   </div>
 
   {#if pag.totalPages > 1}
-    <nav aria-label="Paginación" class="mt-8 mb-6 flex items-center justify-center gap-2 text-sm">
+    <nav
+      aria-label="Paginación"
+      class="mt-8 mb-6 flex items-center justify-center gap-2 text-sm lg:mt-5 lg:mb-4"
+    >
       {#if pag.hasPrev}
         <a
           href={urlTienda({ forma, aroma, pagina: pag.page - 1 })}

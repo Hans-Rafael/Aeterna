@@ -3,11 +3,16 @@
   import { onImageError } from '#lib/images.js';
   import { categories, stockBajo } from '#lib/products.js';
 
-  let { product } = $props();
+  /** @type {{ product: any, compacta?: boolean }} */
+  let { product, compacta = false } = $props();
 </script>
 
 <a href="/producto/{product.slug}" class="group block">
-  <div class="relative aspect-square overflow-hidden rounded-3xl bg-vainilla/30 shadow-sm">
+  <div
+    class="relative aspect-square overflow-hidden rounded-3xl bg-vainilla/30 shadow-sm {compacta
+      ? 'lg:aspect-[4/3]'
+      : ''}"
+  >
     {#if typeof product.stock === 'number' && product.stock <= 0}
       <span
         class="absolute top-3 left-3 z-10 rounded-full bg-cacao/85 px-3 py-1 text-xs tracking-wide text-crema"
