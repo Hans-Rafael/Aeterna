@@ -92,13 +92,13 @@
   <title>{titulo} · Aeterna</title>
 </svelte:head>
 
-<section class="mx-auto max-w-6xl px-4 pt-16">
+<section class="mx-auto max-w-6xl px-4 pt-8">
   <div class="text-center">
     <p class="text-xs tracking-[0.4em] text-rosa-oscuro uppercase">Colección</p>
-    <h1 class="mt-3 font-serif text-4xl text-cacao sm:text-5xl">{titulo}</h1>
+    <h1 class="mt-2 font-serif text-4xl text-cacao">{titulo}</h1>
   </div>
 
-  <div class="mt-10 flex flex-wrap justify-center gap-2">
+  <div class="mt-5 flex flex-wrap justify-center gap-2">
     {#each filters as f (f.label)}
       {@const activo = categoria === f.value}
       <a
@@ -113,7 +113,7 @@
   </div>
 
   {#if aromasDisponibles.length > 1}
-    <div class="mt-3 flex flex-wrap justify-center gap-2 text-xs">
+    <div class="mt-2 flex flex-wrap justify-center gap-2 text-xs">
       <span class="self-center text-cacao/60">Aroma o función:</span>
       <a
         href={urlTienda({ forma, aroma: null })}
@@ -132,7 +132,7 @@
     </div>
   {/if}
 
-  <div class="mt-8 flex items-center justify-between gap-4 text-sm text-cacao/70">
+  <div class="mt-4 flex items-center justify-between gap-4 text-sm text-cacao/70">
     <p>{pag.total} {pag.total === 1 ? 'producto' : 'productos'}</p>
     <div class="flex flex-wrap items-center justify-end gap-4">
       {#if formasDisponibles.length}
@@ -165,7 +165,7 @@
     </div>
   </div>
 
-  <div class="mt-8 grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
+  <div class="mt-4 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
     {#each pag.items as product (product.slug)}
       <ProductCard {product} />
     {:else}
@@ -176,7 +176,7 @@
   </div>
 
   {#if pag.totalPages > 1}
-    <nav aria-label="Paginación" class="mt-14 mb-10 flex items-center justify-center gap-2 text-sm">
+    <nav aria-label="Paginación" class="mt-8 mb-6 flex items-center justify-center gap-2 text-sm">
       {#if pag.hasPrev}
         <a
           href={urlTienda({ forma, aroma, pagina: pag.page - 1 })}
@@ -206,6 +206,6 @@
       {/if}
     </nav>
   {:else}
-    <div class="pb-10"></div>
+    <div class="pb-6"></div>
   {/if}
 </section>

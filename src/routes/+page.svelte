@@ -29,13 +29,13 @@
   />
   <div class="absolute inset-0 -z-10 bg-gradient-to-b from-crema/70 via-crema/40 to-crema"></div>
 
-  <div class="mx-auto flex max-w-3xl flex-col items-center px-4 pt-28 pb-44 text-center sm:pt-36">
+  <div class="mx-auto flex max-w-3xl flex-col items-center px-4 pt-16 pb-28 text-center sm:pt-20">
     <p class="text-xs tracking-[0.4em] text-rosa-oscuro uppercase">Hecho a mano</p>
     <h1 class="mt-4 font-serif text-5xl tracking-[0.3em] text-cacao sm:text-7xl">AETERNA</h1>
     <p class="mt-5 font-serif text-lg text-cacao/80 italic sm:text-xl">
       jabones y velas hechos a mano, con amor
     </p>
-    <div class="mt-10 flex flex-wrap justify-center gap-3">
+    <div class="mt-6 flex flex-wrap justify-center gap-3">
       <a
         href="/tienda?categoria=jabon"
         class="rounded-full bg-cacao px-7 py-3 text-sm tracking-wide text-crema transition hover:bg-rosa-oscuro"
@@ -53,8 +53,8 @@
 </section>
 
 <!-- Destacados -->
-<section class="mx-auto max-w-6xl px-4 -mt-24 relative">
-  <div class="mb-10 text-center">
+<section class="mx-auto max-w-6xl px-4 -mt-16 relative">
+  <div class="mb-6 text-center">
     <h2 class="font-serif text-3xl text-cacao sm:text-4xl">Destacados</h2>
     <p class="mt-2 text-sm text-cacao/60">Nuestros favoritos de la temporada</p>
   </div>
@@ -63,7 +63,7 @@
       <ProductCard {product} />
     {/each}
   </div>
-  <div class="mt-12 text-center">
+  <div class="mt-8 text-center">
     <a href="/tienda" class="text-sm tracking-wide text-rosa-oscuro underline underline-offset-4">
       Ver toda la tienda →
     </a>
@@ -71,10 +71,10 @@
 </section>
 
 <!-- Categorías -->
-<section class="mx-auto mt-24 grid max-w-6xl gap-6 px-4 md:grid-cols-2">
+<section class="mx-auto mt-14 grid max-w-6xl gap-6 px-4 md:grid-cols-2">
   <a
     href="/tienda?categoria=jabon"
-    class="group relative block aspect-[4/3] overflow-hidden rounded-3xl"
+    class="group relative block aspect-[16/9] overflow-hidden rounded-3xl"
   >
     <img
       src={fotoJabones}
@@ -90,7 +90,7 @@
   </a>
   <a
     href="/tienda?categoria=vela"
-    class="group relative block aspect-[4/3] overflow-hidden rounded-3xl"
+    class="group relative block aspect-[16/9] overflow-hidden rounded-3xl"
   >
     <img
       src={fotoVelas}
@@ -107,7 +107,7 @@
 </section>
 
 <!-- Manifiesto -->
-<section class="mx-auto mt-24 max-w-2xl px-4 text-center">
+<section class="mx-auto mt-14 max-w-2xl px-4 text-center">
   <p class="font-serif text-2xl leading-relaxed text-cacao/85 italic">
     Cada pieza se hace a mano, en pequeños lotes, con ingredientes que cuidan tu piel y tu espacio.
   </p>
