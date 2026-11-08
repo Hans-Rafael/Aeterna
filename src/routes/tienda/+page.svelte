@@ -27,13 +27,12 @@
     categoria ? data.products.filter((p) => p.category === categoria) : data.products
   );
 
-  // Forma y aroma solo se ofrecen si hay una categoría con formas (jabón o vela).
+  // Forma: se puede elegir en toda la tienda; si hay categoría, solo sus formas.
   let formasDisponibles = $derived(
-    categoria && categoria in formas
-      ? formas[/** @type {keyof typeof formas} */ (categoria)].filter((f) =>
-          enCategoria.some((p) => p.shape === f)
-        )
-      : []
+    (categoria && categoria in formas
+      ? formas[/** @type {keyof typeof formas} */ (categoria)]
+      : [...new Set([...formas.jabon, ...formas.vela])]
+    ).filter((f) => enCategoria.some((p) => p.shape === f))
   );
   let formaPedida = $derived(page.url.searchParams.get('forma') ?? '');
   let forma = $derived(formasDisponibles.includes(formaPedida) ? formaPedida : null);
@@ -76,6 +75,12 @@
   }
 
   /** @param {Event} event */
+  function cambiarForma(event) {
+    const value = /** @type {HTMLSelectElement} */ (event.currentTarget).value;
+    goto(urlTienda({ forma: value || null, aroma, pagina: null }));
+  }
+
+  /** @param {Event} event */
   function cambiarOrden(event) {
     const value = /** @type {HTMLSelectElement} */ (event.currentTarget).value;
     // Al cambiar el orden volvemos a la primera página.
@@ -107,25 +112,6 @@
     {/each}
   </div>
 
-  {#if formasDisponibles.length}
-    <div class="mt-4 flex flex-wrap justify-center gap-2 text-xs">
-      <span class="self-center text-cacao/60">Forma:</span>
-      <a
-        href={urlTienda({ forma: null, aroma })}
-        class="rounded-full border px-4 py-1.5 {forma === null
-          ? 'border-rosa-oscuro text-rosa-oscuro'
-          : 'border-cacao/20 text-cacao/70 hover:border-rosa-oscuro'}">Todas</a
-      >
-      {#each formasDisponibles as f (f)}
-        <a
-          href={urlTienda({ forma: f, aroma })}
-          class="rounded-full border px-4 py-1.5 {forma === f
-            ? 'border-rosa-oscuro text-rosa-oscuro'
-            : 'border-cacao/20 text-cacao/70 hover:border-rosa-oscuro'}">{formaLabels[f] ?? f}</a
-        >
-      {/each}
-    </div>
-  {/if}
   {#if aromasDisponibles.length > 1}
     <div class="mt-3 flex flex-wrap justify-center gap-2 text-xs">
       <span class="self-center text-cacao/60">Aroma o función:</span>
@@ -148,18 +134,35 @@
 
   <div class="mt-8 flex items-center justify-between gap-4 text-sm text-cacao/70">
     <p>{pag.total} {pag.total === 1 ? 'producto' : 'productos'}</p>
-    <label class="flex items-center gap-2">
-      <span>Ordenar por</span>
-      <select
-        class="rounded-full border border-cacao/20 bg-white px-4 py-2 text-cacao focus:outline-2 focus:outline-rosa-oscuro"
-        value={orden}
-        onchange={cambiarOrden}
-      >
-        {#each ORDENES as o (o.value)}
-          <option value={o.value}>{o.label}</option>
-        {/each}
-      </select>
-    </label>
+    <div class="flex flex-wrap items-center justify-end gap-4">
+      {#if formasDisponibles.length}
+        <label class="flex items-center gap-2">
+          <span>Forma</span>
+          <select
+            class="rounded-full border border-cacao/20 bg-white px-4 py-2 text-cacao focus:outline-2 focus:outline-rosa-oscuro"
+            value={forma ?? ''}
+            onchange={cambiarForma}
+          >
+            <option value="">Todas</option>
+            {#each formasDisponibles as f (f)}
+              <option value={f}>{formaLabels[f] ?? f}</option>
+            {/each}
+          </select>
+        </label>
+      {/if}
+      <label class="flex items-center gap-2">
+        <span>Ordenar por</span>
+        <select
+          class="rounded-full border border-cacao/20 bg-white px-4 py-2 text-cacao focus:outline-2 focus:outline-rosa-oscuro"
+          value={orden}
+          onchange={cambiarOrden}
+        >
+          {#each ORDENES as o (o.value)}
+            <option value={o.value}>{o.label}</option>
+          {/each}
+        </select>
+      </label>
+    </div>
   </div>
 
   <div class="mt-8 grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
