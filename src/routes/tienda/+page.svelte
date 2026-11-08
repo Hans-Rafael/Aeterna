@@ -140,10 +140,10 @@
       class="order-1 flex flex-col gap-2 sm:order-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-4"
     >
       {#if formasDisponibles.length}
-        <label class="flex items-center justify-between gap-2 sm:justify-start">
-          <span>Forma</span>
+        <label class="flex items-center gap-2">
+          <span class="w-24 shrink-0 sm:w-auto">Forma</span>
           <select
-            class="rounded-full border border-cacao/20 bg-white px-4 py-2 text-cacao focus:outline-2 focus:outline-rosa-oscuro"
+            class="min-w-0 flex-1 rounded-full border border-cacao/20 bg-white px-4 py-2 text-cacao focus:outline-2 sm:flex-none focus:outline-rosa-oscuro"
             value={forma ?? ''}
             onchange={cambiarForma}
           >
@@ -154,10 +154,10 @@
           </select>
         </label>
       {/if}
-      <label class="flex items-center justify-between gap-2 sm:justify-start">
-        <span>Ordenar por</span>
+      <label class="flex items-center gap-2">
+        <span class="w-24 shrink-0 sm:w-auto">Ordenar por</span>
         <select
-          class="rounded-full border border-cacao/20 bg-white px-4 py-2 text-cacao focus:outline-2 focus:outline-rosa-oscuro"
+          class="min-w-0 flex-1 rounded-full border border-cacao/20 bg-white px-4 py-2 text-cacao focus:outline-2 sm:flex-none focus:outline-rosa-oscuro"
           value={orden}
           onchange={cambiarOrden}
         >
