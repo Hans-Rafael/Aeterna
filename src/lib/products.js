@@ -211,9 +211,36 @@ const beneficiosJabon = {
   'limon-manzana': ['Cítrico y energizante', 'Deja la piel fresca', 'Aroma frutal vibrante'],
   menta: ['Refrescante', 'Sensación de frescura', 'Ideal para la mañana'],
   incienso: ['Aroma cálido y envolvente', 'Ideal para relajarte', 'Ambiente sereno'],
-  blanqueador: ['Ayuda a unificar el tono de la piel', 'Deja la piel luminosa'],
-  exfoliante: ['Elimina células muertas', 'Deja la piel suave y renovada'],
+  blanqueador: [
+    'Con harina de arroz: aporta luminosidad a la piel',
+    'Con avena: calma y suaviza',
+    'Con glicerina: deja la piel hidratada',
+  ],
+  exfoliante: [
+    'Con carbón: limpieza profunda y purificante',
+    'Exfolia suavemente y renueva la piel',
+    'Con glicerina: no reseca',
+  ],
 };
+
+/**
+ * Ingredientes de los jabones que los tienen cargados.
+ * @type {Record<string, string>}
+ */
+const ingredientesJabon = {
+  blanqueador: 'Base vegetal de coco, glicerina, harina de arroz y avena',
+  exfoliante: 'Base vegetal de coco, glicerina y carbón',
+};
+
+/**
+ * Ingredientes de un jabón (texto vacío si no hay datos).
+ * @param {Product} product
+ * @returns {string}
+ */
+export function getIngredientes(product) {
+  if (product.category !== 'jabon') return '';
+  return ingredientesJabon[clave(product.fragrance)] ?? '';
+}
 
 /**
  * Beneficios para la piel de un jabón (lista vacía si no es jabón o no hay datos).

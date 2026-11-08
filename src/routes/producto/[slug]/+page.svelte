@@ -3,11 +3,12 @@
   import ProductCard from '#lib/components/ProductCard.svelte';
   import { formatPrice } from '#lib/format.js';
   import { onImageError } from '#lib/images.js';
-  import { categories, formaLabels, getBeneficios } from '#lib/products.js';
+  import { categories, formaLabels, getBeneficios, getIngredientes } from '#lib/products.js';
 
   let { data } = $props();
   let product = $derived(data.product);
   let beneficios = $derived(getBeneficios(product));
+  let ingredientes = $derived(getIngredientes(product));
 
   let galeria = $derived([product.image, ...(product.extraImages ?? [])]);
   let elegida = $state(0);
@@ -86,6 +87,9 @@
             <li>{beneficio}</li>
           {/each}
         </ul>
+        {#if ingredientes}
+          <p class="mt-2 text-xs text-cacao/60">Ingredientes: {ingredientes}.</p>
+        {/if}
       </div>
     {/if}
 
