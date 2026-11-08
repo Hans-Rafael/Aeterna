@@ -121,6 +121,16 @@
             <li>{item.quantity} × {item.name}</li>
           {/each}
         </ul>
+        {#if data.sumaSueltos > 0}
+          <p class="mt-2 text-xs text-cacao/60">
+            Por separado, estos productos suman {formatPrice(data.sumaSueltos)}.
+          </p>
+          {#if data.sumaSueltos > product.price}
+            <p class="mt-1 text-xs font-medium text-rosa-oscuro">
+              Ahorras {formatPrice(data.sumaSueltos - product.price)} con el pack.
+            </p>
+          {/if}
+        {/if}
       </div>
     {/if}
 
