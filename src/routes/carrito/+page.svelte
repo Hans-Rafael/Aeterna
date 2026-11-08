@@ -46,6 +46,11 @@
               {line.name}
             </a>
             <p class="text-sm text-cacao/60">{formatPrice(line.price)}</p>
+            {#if typeof line.stock === 'number' && line.stock <= 0}
+              <p class="text-xs text-rosa-oscuro">Agotado: quitalo para poder finalizar.</p>
+            {:else if typeof line.stock === 'number' && line.qty >= line.stock}
+              <p class="text-xs text-cacao/60">Máximo disponible.</p>
+            {/if}
           </div>
 
           <div class="flex items-center rounded-full border border-cacao/20 text-sm">
@@ -60,6 +65,7 @@
               type="button"
               class="h-9 w-9 hover:text-rosa-oscuro"
               aria-label="Agregar uno"
+              disabled={typeof line.stock === 'number' && line.qty >= line.stock}
               onclick={() => cart.setQty(line.slug, line.qty + 1)}>+</button
             >
           </div>

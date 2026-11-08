@@ -16,13 +16,26 @@
   $effect(() => {
     void product.slug;
     elegida = 0;
+    aviso = '';
   });
 
   let qty = $state(1);
   let agregado = $state(false);
 
+  let aviso = $state('');
+  let agotado = $derived(typeof product.stock === 'number' && product.stock <= 0);
+
   function agregar() {
-    cart.add(product.slug, qty);
+    const resultado = cart.add(product.slug, qty);
+    if (resultado === 'agotado') {
+      aviso = 'Este producto está agotado por el momento.';
+      return;
+    }
+    if (resultado === 'limite') {
+      aviso = `Solo hay ${product.stock} ${product.stock === 1 ? 'unidad disponible' : 'unidades disponibles'} y ya están en tu carrito.`;
+      return;
+    }
+    aviso = '';
     agregado = true;
     setTimeout(() => (agregado = false), 2000);
   }
@@ -124,11 +137,19 @@
       <button
         type="button"
         onclick={agregar}
-        class="h-11 rounded-full bg-cacao px-8 text-sm tracking-wide text-crema transition hover:bg-rosa-oscuro"
+        class="h-11 rounded-full px-8 text-sm tracking-wide text-crema transition {agotado
+          ? 'bg-cacao/50 hover:bg-cacao/60'
+          : 'bg-cacao hover:bg-rosa-oscuro'}"
       >
         {agregado ? 'Agregado ✓' : 'Agregar al carrito'}
       </button>
     </div>
+    {#if agotado && !aviso}
+      <p class="mt-3 text-sm text-rosa-oscuro">Agotado por el momento.</p>
+    {/if}
+    {#if aviso}
+      <p role="alert" class="mt-3 rounded-2xl bg-rosa/30 p-3 text-sm text-cacao">{aviso}</p>
+    {/if}
 
     {#if cart.count > 0}
       <a href="/carrito" class="mt-5 text-sm text-rosa-oscuro underline underline-offset-4">

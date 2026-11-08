@@ -56,19 +56,35 @@ class Cart {
     return this.lines.reduce((sum, l) => sum + l.price * l.qty, 0);
   }
 
-  /** @param {string} slug @param {number} [qty] */
+  /** Unidades disponibles de un producto (sin límite si no se conoce el stock). @param {string} slug */
+  stockOf(slug) {
+    const stock = this.catalog.find((p) => p.slug === slug)?.stock;
+    return typeof stock === 'number' ? stock : Infinity;
+  }
+
+  /**
+   * Agrega al carrito sin pasarse del stock.
+   * @param {string} slug
+   * @param {number} [qty]
+   * @returns {'ok' | 'agotado' | 'limite'} 'limite' = se agregó menos de lo pedido (o nada) por falta de stock
+   */
   add(slug, qty = 1) {
+    const stock = this.stockOf(slug);
+    if (stock <= 0) return 'agotado';
     const existing = this.items.find((i) => i.slug === slug);
-    if (existing) existing.qty += qty;
-    else this.items.push({ slug, qty });
+    const actual = existing?.qty ?? 0;
+    const nuevo = Math.min(actual + qty, stock);
+    if (existing) existing.qty = nuevo;
+    else this.items.push({ slug, qty: nuevo });
     this.#save();
+    return actual + qty > stock ? 'limite' : 'ok';
   }
 
   /** @param {string} slug @param {number} qty */
   setQty(slug, qty) {
     if (qty < 1) return this.remove(slug);
     const item = this.items.find((i) => i.slug === slug);
-    if (item) item.qty = qty;
+    if (item) item.qty = Math.min(qty, Math.max(this.stockOf(slug), 1));
     this.#save();
   }
 
