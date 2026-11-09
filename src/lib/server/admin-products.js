@@ -176,5 +176,16 @@ export async function aplicarFotosExtra(form, product, cambios) {
   } else {
     cambios.extra_images = extras;
   }
+
+  // "Quitar foto principal": sube la primera foto de contexto o, si no hay, deja el producto sin foto.
+  if (form.get('quitar_principal') === 'on' && !cambios.image_path) {
+    const restantes = /** @type {string[]} */ (cambios.extra_images);
+    if (restantes.length) {
+      cambios.image_path = restantes[0];
+      cambios.extra_images = restantes.slice(1);
+    } else {
+      cambios.image_path = '';
+    }
+  }
   return null;
 }

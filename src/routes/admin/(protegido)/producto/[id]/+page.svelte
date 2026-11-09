@@ -34,6 +34,11 @@
         alt={p.name}
         class="aspect-square w-full rounded-3xl bg-vainilla/30 object-cover"
       />
+      {#if p.image_path}
+        <label class="flex items-center gap-2 text-sm">
+          <input type="checkbox" name="quitar_principal" /> Quitar foto principal
+        </label>
+      {/if}
       <FotoPrincipalInput label="Cambiar foto" info="JPG, PNG o WebP · máx. 5 MB" />
 
       <div class="space-y-2 border-t border-cacao/10 pt-4 text-sm">

@@ -68,6 +68,11 @@
         class="aspect-square w-full rounded-3xl bg-vainilla/30 object-cover"
       />
     {/if}
+    {#if pack?.image_path}
+      <label class="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="quitar_principal" /> Quitar foto principal
+      </label>
+    {/if}
     <FotoPrincipalInput
       label={imageUrl ? 'Cambiar foto' : 'Foto del pack'}
       info="Opcional · JPG, PNG o WebP · máx. 5 MB"
