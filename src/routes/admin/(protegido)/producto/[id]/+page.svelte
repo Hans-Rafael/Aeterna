@@ -1,4 +1,5 @@
 <script>
+  import FotoPrincipalInput from '#lib/components/admin/FotoPrincipalInput.svelte';
   import FotosExtraInput from '#lib/components/admin/FotosExtraInput.svelte';
   import { untrack } from 'svelte';
   import { page } from '$app/state';
@@ -33,15 +34,7 @@
         alt={p.name}
         class="aspect-square w-full rounded-3xl bg-vainilla/30 object-cover"
       />
-      <label class="block text-sm">
-        <span class="text-cacao/70">Cambiar foto (JPG, PNG o WebP, máx. 5 MB)</span>
-        <input
-          type="file"
-          name="foto"
-          accept="image/jpeg,image/png,image/webp"
-          class="mt-2 block w-full text-sm"
-        />
-      </label>
+      <FotoPrincipalInput label="Cambiar foto" info="JPG, PNG o WebP · máx. 5 MB" />
 
       <div class="space-y-2 border-t border-cacao/10 pt-4 text-sm">
         <p class="text-cacao/70">Fotos de contexto (el jabón en un baño, la vela encendida…)</p>

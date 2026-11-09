@@ -56,10 +56,10 @@
       </ul>
     {/if}
     {#if archivos.length < max}
-      <label class="block">
-        <span class="text-cacao/70"
-          >Agregar fotos (JPG, PNG o WebP, máx. 5 MB c/u). Puedes elegir una y luego otra: se suman.</span
-        >
+      <label
+        class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-cacao/30 bg-white px-5 py-2.5 text-sm text-cacao transition hover:border-rosa-oscuro hover:text-rosa-oscuro focus-within:outline-2 focus-within:outline-rosa-oscuro"
+      >
+        <span aria-hidden="true">＋</span> Agregar fotos
         <input
           bind:this={input}
           onchange={alElegir}
@@ -67,9 +67,12 @@
           {name}
           multiple
           accept="image/jpeg,image/png,image/webp"
-          class="mt-2 block w-full text-sm"
+          class="sr-only"
         />
       </label>
+      <p class="text-xs text-cacao/60">
+        JPG, PNG o WebP · máx. 5 MB c/u. Puedes elegir una y luego otra: se suman.
+      </p>
     {:else}
       <input bind:this={input} type="file" {name} multiple class="hidden" />
     {/if}

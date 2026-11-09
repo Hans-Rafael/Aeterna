@@ -1,4 +1,5 @@
 <script>
+  import FotoPrincipalInput from '#lib/components/admin/FotoPrincipalInput.svelte';
   import { aromas, formaLabels, formas } from '#lib/products.js';
 
   let { form } = $props();
@@ -23,18 +24,10 @@
 
   <form method="POST" enctype="multipart/form-data" class="mt-8 grid gap-8 md:grid-cols-2">
     <div class="space-y-4">
-      <label class="block text-sm">
-        <span class="text-cacao/70"
-          >Foto principal (opcional; JPG, PNG o WebP, máx. 5 MB). Sin foto se muestra una imagen por
-          defecto.</span
-        >
-        <input
-          type="file"
-          name="foto"
-          accept="image/jpeg,image/png,image/webp"
-          class="mt-2 block w-full text-sm"
-        />
-      </label>
+      <FotoPrincipalInput
+        label="Foto principal"
+        info="Opcional · JPG, PNG o WebP · máx. 5 MB. Sin foto se muestra una imagen por defecto."
+      />
     </div>
 
     <div class="space-y-4">

@@ -1,4 +1,5 @@
 <script>
+  import FotoPrincipalInput from '#lib/components/admin/FotoPrincipalInput.svelte';
   import FotosExtraInput from '#lib/components/admin/FotosExtraInput.svelte';
   import { untrack } from 'svelte';
   import { formatPrice } from '#lib/format.js';
@@ -67,17 +68,10 @@
         class="aspect-square w-full rounded-3xl bg-vainilla/30 object-cover"
       />
     {/if}
-    <label class="block text-sm">
-      <span class="text-cacao/70"
-        >{imageUrl ? 'Cambiar foto' : 'Foto del pack'} (opcional · JPG, PNG o WebP, máx. 5 MB)</span
-      >
-      <input
-        type="file"
-        name="foto"
-        accept="image/jpeg,image/png,image/webp"
-        class="mt-2 block w-full text-sm"
-      />
-    </label>
+    <FotoPrincipalInput
+      label={imageUrl ? 'Cambiar foto' : 'Foto del pack'}
+      info="Opcional · JPG, PNG o WebP · máx. 5 MB"
+    />
 
     {#if pack}
       <div class="space-y-2 border-t border-cacao/10 pt-4 text-sm">
