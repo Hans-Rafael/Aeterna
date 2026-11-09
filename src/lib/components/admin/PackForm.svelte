@@ -1,4 +1,5 @@
 <script>
+  import FotosExtraInput from '#lib/components/admin/FotosExtraInput.svelte';
   import { untrack } from 'svelte';
   import { formatPrice } from '#lib/format.js';
 
@@ -96,16 +97,7 @@
             {/each}
           </ul>
         {/if}
-        <label class="block">
-          <span class="text-cacao/70">Agregar fotos (JPG, PNG o WebP, máx. 5 MB c/u)</span>
-          <input
-            type="file"
-            name="fotos_extra"
-            multiple
-            accept="image/jpeg,image/png,image/webp"
-            class="mt-2 block w-full text-sm"
-          />
-        </label>
+        <FotosExtraInput max={Math.max(0, 3 - extras.length)} />
       </div>
     {:else}
       <p class="text-xs text-cacao/50">
