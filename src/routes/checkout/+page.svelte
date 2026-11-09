@@ -2,15 +2,86 @@
   import { untrack } from 'svelte';
   import { cart } from '#lib/cart.svelte.js';
   import { formatPrice } from '#lib/format.js';
-  import { LIMITES } from '#lib/validar.js';
+  import { normalizarCuit } from '#lib/cuit.js';
+  import { LIMITES, errorEmail, errorNombre, errorTelefono } from '#lib/validar.js';
 
   /** @type {{ form: any }} */
   let { form } = $props();
 
   // El servidor recalcula precios desde la base; acá solo mandamos slug y cantidad.
-  const PATRON_TELEFONO = String.raw`\+?[0-9 \(\)\-]{8,20}`;
-  const PATRON_CUIT = String.raw`[0-9 \-]{11,14}`;
   let metodo = $state(untrack(() => form?.metodo_pago ?? 'mercadopago'));
+
+  const valores = $state({
+    nombre: untrack(() => form?.nombre ?? ''),
+    email: untrack(() => form?.email ?? ''),
+    telefono: untrack(() => form?.telefono ?? ''),
+    pagador_nombre: untrack(() => form?.pagador_nombre ?? ''),
+    pagador_cuit: untrack(() => form?.pagador_cuit ?? ''),
+  });
+  /** Campos que el usuario ya tocó (salió de ellos con Tab/clic): recién ahí mostramos el error. */
+  const tocados = $state({
+    nombre: false,
+    email: false,
+    telefono: false,
+    pagador_nombre: false,
+    pagador_cuit: false,
+  });
+
+  /** @param {string} valor @param {string} campo */
+  function nombreError(valor, campo) {
+    const v = valor.trim();
+    if (!v) return `Ingresá ${campo}.`;
+    const e = errorNombre(v);
+    return e ? `Este campo ${e}.` : null;
+  }
+
+  let errores = $derived({
+    nombre: nombreError(valores.nombre, 'tu nombre y apellido'),
+    email: (() => {
+      const v = valores.email.trim();
+      if (!v) return metodo === 'alias' ? null : 'Ingresá tu email.';
+      const e = errorEmail(v);
+      return e ? `El email ${e}.` : null;
+    })(),
+    telefono: (() => {
+      const v = valores.telefono.trim();
+      if (!v) return 'Ingresá tu teléfono.';
+      const e = errorTelefono(v);
+      return e ? `El teléfono ${e}.` : null;
+    })(),
+    pagador_nombre:
+      metodo === 'alias'
+        ? nombreError(valores.pagador_nombre, 'el nombre completo del titular')
+        : null,
+    pagador_cuit: (() => {
+      if (metodo !== 'alias') return null;
+      const v = valores.pagador_cuit.trim();
+      if (!v) return 'Ingresá el CUIT/CUIL del titular.';
+      return normalizarCuit(v)
+        ? null
+        : 'El CUIT/CUIL no es válido (11 dígitos, ej. 20-12345678-9).';
+    })(),
+  });
+
+  /** @param {keyof typeof errores} campo */
+  const ver = (campo) => (tocados[campo] ? errores[campo] : null);
+
+  /** @param {SubmitEvent} e */
+  function alEnviar(e) {
+    for (const campo of /** @type {(keyof typeof tocados)[]} */ (Object.keys(tocados))) {
+      tocados[campo] = true;
+    }
+    const primero = /** @type {(keyof typeof errores)[]} */ (Object.keys(errores)).find(
+      (c) => errores[c]
+    );
+    if (primero) {
+      e.preventDefault();
+      /** @type {HTMLElement | null} */ (
+        /** @type {HTMLFormElement} */ (e.currentTarget).elements.namedItem(primero)
+      )?.focus();
+    }
+  }
+
   let carrito = $derived(JSON.stringify(cart.items.map((i) => ({ slug: i.slug, qty: i.qty }))));
 </script>
 
@@ -33,7 +104,7 @@
     </div>
   {:else}
     <div class="mt-12 grid gap-10 md:grid-cols-5">
-      <form method="POST" class="space-y-5 md:col-span-3">
+      <form method="POST" novalidate onsubmit={alEnviar} class="space-y-5 md:col-span-3">
         <input type="hidden" name="carrito" value={carrito} />
 
         <h2 class="font-serif text-xl text-cacao">Tus datos</h2>
@@ -41,45 +112,45 @@
         <label class="block text-sm">
           <span class="text-cacao/70">Nombre y apellido</span>
           <input
-            required
             name="nombre"
-            minlength={LIMITES.nombreMin}
             maxlength={LIMITES.nombreMax}
-            pattern=".*\S\s+\S.*"
-            title="Escribí nombre y apellido"
-            value={form?.nombre ?? ''}
+            bind:value={valores.nombre}
+            onblur={() => (tocados.nombre = true)}
+            aria-invalid={!!ver('nombre')}
             class="field"
             autocomplete="name"
           />
+          {#if ver('nombre')}<span class="err" role="alert">{ver('nombre')}</span>{/if}
         </label>
         <label class="block text-sm">
           <span class="text-cacao/70">Email{metodo === 'alias' ? ' (opcional)' : ''}</span>
           <input
-            required={metodo !== 'alias'}
             type="email"
             name="email"
             maxlength={LIMITES.emailMax}
-            value={form?.email ?? ''}
+            bind:value={valores.email}
+            onblur={() => (tocados.email = true)}
+            aria-invalid={!!ver('email')}
             class="field"
             autocomplete="email"
           />
+          {#if ver('email')}<span class="err" role="alert">{ver('email')}</span>{/if}
         </label>
         <label class="block text-sm">
           <span class="text-cacao/70">Teléfono</span>
           <input
-            required
             type="tel"
             name="telefono"
             inputmode="tel"
-            minlength="8"
             maxlength={LIMITES.telefonoMax}
-            pattern={PATRON_TELEFONO}
-            title="Solo números (8 a 15 dígitos). Ej: 11 2345-6789"
             placeholder="11 2345-6789"
-            value={form?.telefono ?? ''}
+            bind:value={valores.telefono}
+            onblur={() => (tocados.telefono = true)}
+            aria-invalid={!!ver('telefono')}
             class="field"
             autocomplete="tel"
           />
+          {#if ver('telefono')}<span class="err" role="alert">{ver('telefono')}</span>{/if}
         </label>
 
         <div class="rounded-2xl bg-vainilla/20 p-5 text-sm text-cacao/80">
@@ -130,31 +201,33 @@
             <label class="block text-sm">
               <span class="text-cacao/70">Nombre y apellido completo del titular de la cuenta</span>
               <input
-                required
                 name="pagador_nombre"
-                minlength={LIMITES.nombreMin}
                 maxlength={LIMITES.nombreMax}
-                pattern=".*\S\s+\S.*"
-                title="Escribí nombre y apellido completos"
-                value={form?.pagador_nombre ?? ''}
+                bind:value={valores.pagador_nombre}
+                onblur={() => (tocados.pagador_nombre = true)}
+                aria-invalid={!!ver('pagador_nombre')}
                 class="field"
                 autocomplete="off"
               />
+              {#if ver('pagador_nombre')}<span class="err" role="alert"
+                  >{ver('pagador_nombre')}</span
+                >{/if}
             </label>
             <label class="block text-sm">
               <span class="text-cacao/70">CUIT / CUIL del titular</span>
               <input
-                required
                 name="pagador_cuit"
                 inputmode="numeric"
                 maxlength={LIMITES.cuitMax}
-                pattern={PATRON_CUIT}
-                title="11 dígitos, con o sin guiones"
                 placeholder="20-12345678-9"
-                value={form?.pagador_cuit ?? ''}
+                bind:value={valores.pagador_cuit}
+                onblur={() => (tocados.pagador_cuit = true)}
+                aria-invalid={!!ver('pagador_cuit')}
                 class="field"
                 autocomplete="off"
               />
+              {#if ver('pagador_cuit')}<span class="err" role="alert">{ver('pagador_cuit')}</span
+                >{/if}
             </label>
           </div>
         {/if}
@@ -209,6 +282,15 @@
     background: white;
     padding: 0.625rem 0.875rem;
     color: var(--color-cacao);
+  }
+  .field[aria-invalid='true'] {
+    border-color: var(--color-rosa-oscuro);
+  }
+  .err {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--color-rosa-oscuro);
   }
   .field:focus {
     outline: 2px solid var(--color-rosa-oscuro);
