@@ -84,6 +84,14 @@
         class="rounded-full border border-cacao/20 px-4 py-2 hover:border-rosa-oscuro">Ver tienda</a
       >
       <a
+        href="/admin/pedidos"
+        class="rounded-full border border-cacao/20 px-4 py-2 hover:border-rosa-oscuro">Pedidos</a
+      >
+      <a
+        href="/admin/ajustes"
+        class="rounded-full border border-cacao/20 px-4 py-2 hover:border-rosa-oscuro">Ajustes</a
+      >
+      <a
         href="/admin/producto/nuevo"
         class="rounded-full border border-cacao/20 px-4 py-2 hover:border-rosa-oscuro"
         >+ Nuevo producto</a

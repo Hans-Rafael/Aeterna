@@ -6,6 +6,7 @@
   let { form } = $props();
 
   // El servidor recalcula precios desde la base; acá solo mandamos slug y cantidad.
+  let metodo = $state('mercadopago');
   let carrito = $derived(JSON.stringify(cart.items.map((i) => ({ slug: i.slug, qty: i.qty }))));
 </script>
 
@@ -74,11 +75,44 @@
           </p>
         </div>
 
+        <fieldset class="space-y-2">
+          <legend class="font-serif text-xl text-cacao">Forma de pago</legend>
+          <label
+            class="flex cursor-pointer items-start gap-3 rounded-2xl border border-cacao/15 bg-white p-4 text-sm has-[:checked]:border-rosa-oscuro"
+          >
+            <input
+              type="radio"
+              name="metodo_pago"
+              value="mercadopago"
+              bind:group={metodo}
+              class="mt-1"
+            />
+            <span>
+              <span class="font-medium">Mercado Pago</span>
+              <span class="block text-cacao/60">Tarjeta, dinero en cuenta u otros medios.</span>
+            </span>
+          </label>
+          <label
+            class="flex cursor-pointer items-start gap-3 rounded-2xl border border-cacao/15 bg-white p-4 text-sm has-[:checked]:border-rosa-oscuro"
+          >
+            <input type="radio" name="metodo_pago" value="alias" bind:group={metodo} class="mt-1" />
+            <span>
+              <span class="font-medium">Transferencia por alias</span>
+              <span class="block text-cacao/60">
+                Te mostramos el alias y envías el comprobante por WhatsApp.
+              </span>
+            </span>
+          </label>
+        </fieldset>
+
         <button
           type="submit"
-          class="w-full rounded-full bg-[#009ee3] px-7 py-3.5 text-sm font-medium tracking-wide text-white transition hover:brightness-95"
+          class="w-full rounded-full px-7 py-3.5 text-sm font-medium tracking-wide text-white transition hover:brightness-95 {metodo ===
+          'alias'
+            ? 'bg-cacao'
+            : 'bg-[#009ee3]'}"
         >
-          Pagar con Mercado Pago
+          {metodo === 'alias' ? 'Confirmar pedido y ver alias' : 'Pagar con Mercado Pago'}
         </button>
 
         {#if form?.error}

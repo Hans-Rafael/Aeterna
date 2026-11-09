@@ -14,24 +14,44 @@ export function whatsappUrl(mensaje = '') {
   return `https://wa.me/${WHATSAPP_NUMERO}${texto}`;
 }
 
+/** @param {{ name: string, qty: number, price: number }[]} lines */
+const listaItems = (lines) =>
+  lines.map((l) => `• ${l.qty} x ${l.name} (${formatPrice(l.price * l.qty)})`);
+
 /**
- * Arma el mensaje del pedido para coordinar pago y entrega.
- * @param {{ name: string, qty: number, price: number }[]} lines
- * @param {number} total
+ * Mensaje para enviar el comprobante de una transferencia por alias.
+ * @param {{ id: string, customer_name: string, total: number, lineas: { name: string, qty: number, price: number }[] }} pedido
+ * @param {{ alias: string, titular: string }} pago
  */
-export function mensajePedido(lines, total) {
-  const items = lines.map((l) => `• ${l.qty} x ${l.name} (${formatPrice(l.price * l.qty)})`);
+export function mensajeTransferencia(pedido, pago) {
   return [
-    '¡Hola Aeterna! 🧼🕯️ Quiero hacer este pedido:',
+    `¡Hola Aeterna! 🧼🕯️ Hice una transferencia por mi pedido #${pedido.id.slice(0, 8)}:`,
     '',
-    ...items,
+    ...listaItems(pedido.lineas),
     '',
-    `Total: ${formatPrice(total)}`,
+    `Total: ${formatPrice(pedido.total)}`,
+    `Alias: ${pago.alias} (${pago.titular})`,
+    `Nombre: ${pedido.customer_name}`,
     '',
-    '• Nombre:',
-    '• Forma de pago: (Mercado Pago / Alias)',
-    '• Entrega: (Punto de encuentro en Escobar / Retiro a coordinar)',
+    'Te adjunto el comprobante. ¿Coordinamos la entrega en Escobar?',
+    '¡Gracias!',
+  ].join('\n');
+}
+
+/**
+ * Mensaje para coordinar la entrega de un pedido ya pagado con Mercado Pago.
+ * @param {{ id: string, customer_name: string, total: number, status: string, lineas: { name: string, qty: number, price: number }[] }} pedido
+ */
+export function mensajeCoordinacion(pedido) {
+  return [
+    `¡Hola Aeterna! 🧼🕯️ Hice el pedido #${pedido.id.slice(0, 8)} y pagué con Mercado Pago:`,
     '',
+    ...listaItems(pedido.lineas),
+    '',
+    `Total: ${formatPrice(pedido.total)}`,
+    `Nombre: ${pedido.customer_name}`,
+    '',
+    '¿Coordinamos la entrega (punto de encuentro o retiro en Escobar)?',
     '¡Gracias!',
   ].join('\n');
 }

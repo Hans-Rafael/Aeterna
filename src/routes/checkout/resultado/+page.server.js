@@ -1,4 +1,4 @@
-import { estadoPedido } from '#lib/server/orders.js';
+import { pedidoConLineas } from '#lib/server/orders.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -7,7 +7,7 @@ export async function load({ url }) {
   const id = url.searchParams.get('pedido');
   if (!id || !UUID.test(id)) return { pedido: null };
   try {
-    return { pedido: await estadoPedido(id) };
+    return { pedido: await pedidoConLineas(id) };
   } catch (err) {
     console.error('[resultado] No se pudo leer el pedido:', err);
     return { pedido: null };

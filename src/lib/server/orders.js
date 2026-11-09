@@ -14,11 +14,18 @@ export class SinStockError extends Error {}
  *              numero: string, pisoDepto: string | null, notas: string | null } | null,
  *   },
  *   costoEnvio: number,
+ *   metodoPago?: 'mercadopago' | 'alias',
  *   lineas: { product: { id: string, price: number }, qty: number }[],
  *   reservas: { product_id: string, qty: number }[],
  * }} opts
  */
-export async function crearPedido({ datos, costoEnvio, lineas, reservas }) {
+export async function crearPedido({
+  datos,
+  costoEnvio,
+  lineas,
+  reservas,
+  metodoPago = 'mercadopago',
+}) {
   const db = adminClient();
   const productos = lineas.reduce((sum, l) => sum + l.product.price * l.qty, 0);
   const envio = datos.envio;
@@ -27,6 +34,7 @@ export async function crearPedido({ datos, costoEnvio, lineas, reservas }) {
     .from('orders')
     .insert({
       status: 'pendiente',
+      payment_method: metodoPago,
       total: productos + costoEnvio,
       shipping_cost: costoEnvio,
       customer_name: datos.nombre,
@@ -96,11 +104,71 @@ export async function guardarPreferencia(pedidoId, preferenciaId) {
 export async function estadoPedido(pedidoId) {
   const { data, error } = await adminClient()
     .from('orders')
-    .select('id, status, total')
+    .select('id, status, total, payment_method, customer_name')
     .eq('id', pedidoId)
     .maybeSingle();
   if (error) throw error;
   return data;
+}
+
+/**
+ * Pedido con sus líneas (nombre y cantidad), para armar mensajes de WhatsApp.
+ * @param {string} pedidoId
+ */
+export async function pedidoConLineas(pedidoId) {
+  const pedido = await estadoPedido(pedidoId);
+  if (!pedido) return null;
+  const { data, error } = await adminClient()
+    .from('order_items')
+    .select('quantity, unit_price, products(name)')
+    .eq('order_id', pedidoId);
+  if (error) throw error;
+  const lineas = (data ?? []).map((/** @type {any} */ l) => ({
+    name: l.products?.name ?? 'Producto',
+    qty: l.quantity,
+    price: l.unit_price,
+  }));
+  return { ...pedido, lineas };
+}
+
+/** Pedidos más recientes para el admin. */
+export async function listarPedidos() {
+  const { data, error } = await adminClient()
+    .from('orders')
+    .select('id, status, total, payment_method, customer_name, customer_phone, created_at')
+    .order('created_at', { ascending: false })
+    .limit(100);
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Marca como pagado un pedido pendiente o vencido (pago por alias confirmado a mano).
+ * @param {string} pedidoId
+ */
+export async function marcarPagado(pedidoId) {
+  const pedido = await estadoPedido(pedidoId);
+  if (!pedido) return;
+  if (pedido.status === 'pendiente' || pedido.status === 'vencido') {
+    await actualizar(pedidoId, { status: 'pagado' }, pedido.status);
+  }
+}
+
+/** @param {string} pedidoId */
+export async function marcarEntregado(pedidoId) {
+  await actualizar(pedidoId, { status: 'entregado' }, 'pagado');
+}
+
+/**
+ * Cancela un pedido pendiente y devuelve su stock.
+ * @param {string} pedidoId
+ */
+export async function cancelarPedido(pedidoId) {
+  const { error } = await adminClient().rpc('liberar_pedido', {
+    p_order_id: pedidoId,
+    p_nuevo_estado: 'rechazado',
+  });
+  if (error) throw error;
 }
 
 /**

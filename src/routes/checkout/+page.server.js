@@ -29,6 +29,8 @@ export const actions = {
       envio: null,
     };
 
+    const metodoPago = texto(form.get('metodo_pago')) === 'alias' ? 'alias' : 'mercadopago';
+
     if (!datos.nombre || !EMAIL.test(datos.email) || !datos.telefono) {
       return fail(400, { error: 'Revisá nombre, email y teléfono.', ...datos });
     }
@@ -84,7 +86,7 @@ export const actions = {
 
     let pedido;
     try {
-      pedido = await crearPedido({ datos, costoEnvio: 0, lineas, reservas });
+      pedido = await crearPedido({ datos, costoEnvio: 0, lineas, reservas, metodoPago });
     } catch (err) {
       if (err instanceof SinStockError) {
         return fail(409, {
@@ -94,6 +96,8 @@ export const actions = {
       }
       throw err;
     }
+
+    if (metodoPago === 'alias') redirect(303, `/checkout/alias?pedido=${pedido.id}`);
 
     // Mercado Pago necesita una URL pública para avisar del pago. En localhost no la usamos.
     const esLocal = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
