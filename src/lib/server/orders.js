@@ -15,6 +15,7 @@ export class SinStockError extends Error {}
  *   },
  *   costoEnvio: number,
  *   metodoPago?: 'mercadopago' | 'alias',
+ *   pagador?: { nombre: string, cuit: string } | null,
  *   lineas: { product: { id: string, price: number }, qty: number }[],
  *   reservas: { product_id: string, qty: number }[],
  * }} opts
@@ -25,6 +26,7 @@ export async function crearPedido({
   lineas,
   reservas,
   metodoPago = 'mercadopago',
+  pagador = null,
 }) {
   const db = adminClient();
   const productos = lineas.reduce((sum, l) => sum + l.product.price * l.qty, 0);
@@ -35,6 +37,7 @@ export async function crearPedido({
     .insert({
       status: 'pendiente',
       payment_method: metodoPago,
+      ...(pagador ? { payer_name: pagador.nombre, payer_cuit: pagador.cuit } : {}),
       total: productos + costoEnvio,
       shipping_cost: costoEnvio,
       customer_name: datos.nombre,
@@ -118,6 +121,11 @@ export async function estadoPedido(pedidoId) {
 export async function pedidoConLineas(pedidoId) {
   const pedido = await estadoPedido(pedidoId);
   if (!pedido) return null;
+  const { data: extra } = await adminClient()
+    .from('orders')
+    .select('payer_name, payer_cuit')
+    .eq('id', pedidoId)
+    .maybeSingle();
   const { data, error } = await adminClient()
     .from('order_items')
     .select('quantity, unit_price, products(name)')
@@ -128,14 +136,21 @@ export async function pedidoConLineas(pedidoId) {
     qty: l.quantity,
     price: l.unit_price,
   }));
-  return { ...pedido, lineas };
+  return {
+    ...pedido,
+    payer_name: extra?.payer_name ?? null,
+    payer_cuit: extra?.payer_cuit ?? null,
+    lineas,
+  };
 }
 
 /** Pedidos más recientes para el admin. */
 export async function listarPedidos() {
   const { data, error } = await adminClient()
     .from('orders')
-    .select('id, status, total, payment_method, customer_name, customer_phone, created_at')
+    .select(
+      'id, status, total, payment_method, customer_name, customer_phone, payer_name, payer_cuit, created_at'
+    )
     .order('created_at', { ascending: false })
     .limit(100);
   if (error) throw error;

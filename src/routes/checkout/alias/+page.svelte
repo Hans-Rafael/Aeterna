@@ -6,6 +6,7 @@
 
   let { data } = $props();
   let copiado = $state(false);
+  let referencia = $state('');
 
   // El pedido ya está registrado: vaciamos el carrito de este navegador.
   onMount(() => {
@@ -53,11 +54,24 @@
       <p class="font-serif text-3xl text-cacao">{formatPrice(data.pedido.total)}</p>
     </div>
 
+    <label class="mt-8 block text-left text-sm">
+      <span class="text-cacao/70">
+        Código de identificación de la transferencia (opcional, lo ves en el comprobante del banco:
+        "ID COELSA", "Nº de comprobante" o "Nº de operación")
+      </span>
+      <input
+        bind:value={referencia}
+        inputmode="numeric"
+        maxlength="40"
+        class="mt-1.5 block w-full rounded-xl border border-cacao/20 bg-white px-3.5 py-2.5"
+      />
+    </label>
+
     <a
-      href={whatsappUrl(mensajeTransferencia(data.pedido, data.pago))}
+      href={whatsappUrl(mensajeTransferencia(data.pedido, data.pago, referencia))}
       target="_blank"
       rel="noopener noreferrer"
-      class="mt-8 inline-block rounded-full bg-[#25D366] px-7 py-3 text-sm font-medium text-white hover:brightness-95"
+      class="mt-6 inline-block rounded-full bg-[#25D366] px-7 py-3 text-sm font-medium text-white hover:brightness-95"
     >
       Enviar comprobante por WhatsApp
     </a>

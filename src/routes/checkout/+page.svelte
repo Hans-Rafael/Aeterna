@@ -1,4 +1,5 @@
 <script>
+  import { untrack } from 'svelte';
   import { cart } from '#lib/cart.svelte.js';
   import { formatPrice } from '#lib/format.js';
 
@@ -6,7 +7,7 @@
   let { form } = $props();
 
   // El servidor recalcula precios desde la base; acá solo mandamos slug y cantidad.
-  let metodo = $state('mercadopago');
+  let metodo = $state(untrack(() => form?.metodo_pago ?? 'mercadopago'));
   let carrito = $derived(JSON.stringify(cart.items.map((i) => ({ slug: i.slug, qty: i.qty }))));
 </script>
 
@@ -105,11 +106,43 @@
           </label>
         </fieldset>
 
+        {#if metodo === 'alias'}
+          <div class="space-y-4 rounded-2xl bg-vainilla/20 p-5">
+            <p class="text-sm text-cacao/80">
+              Para identificar tu transferencia, indicá los datos de la cuenta <strong
+                >desde la que vas a transferir</strong
+              > (pueden ser distintos a los tuyos).
+            </p>
+            <label class="block text-sm">
+              <span class="text-cacao/70">Nombre y apellido completo del titular de la cuenta</span>
+              <input
+                required
+                name="pagador_nombre"
+                value={form?.pagador_nombre ?? ''}
+                class="field"
+                autocomplete="off"
+              />
+            </label>
+            <label class="block text-sm">
+              <span class="text-cacao/70">CUIT / CUIL del titular</span>
+              <input
+                required
+                name="pagador_cuit"
+                inputmode="numeric"
+                placeholder="20-12345678-9"
+                value={form?.pagador_cuit ?? ''}
+                class="field"
+                autocomplete="off"
+              />
+            </label>
+          </div>
+        {/if}
+
         <button
           type="submit"
           class="w-full rounded-full px-7 py-3.5 text-sm font-medium tracking-wide text-white transition hover:brightness-95 {metodo ===
           'alias'
-            ? 'bg-cacao'
+            ? 'bg-[#25D366]'
             : 'bg-[#009ee3]'}"
         >
           {metodo === 'alias' ? 'Confirmar pedido y ver alias' : 'Pagar con Mercado Pago'}

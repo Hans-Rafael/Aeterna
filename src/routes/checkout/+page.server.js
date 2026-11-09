@@ -1,4 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
+import { normalizarCuit } from '#lib/cuit.js';
 import { MINUTOS_RESERVA } from '#lib/envio.js';
 import { getActiveProducts } from '#lib/server/catalog.js';
 import { crearPreferencia } from '#lib/server/mercadopago.js';
@@ -30,6 +31,28 @@ export const actions = {
     };
 
     const metodoPago = texto(form.get('metodo_pago')) === 'alias' ? 'alias' : 'mercadopago';
+
+    // Transferencia: necesitamos saber quién transfiere para cruzarlo con el banco.
+    /** @type {{ nombre: string, cuit: string } | null} */
+    let pagador = null;
+    if (metodoPago === 'alias') {
+      const nombrePagador = texto(form.get('pagador_nombre'));
+      const cuit = normalizarCuit(texto(form.get('pagador_cuit')));
+      const recuerdo = {
+        metodo_pago: 'alias',
+        pagador_nombre: nombrePagador,
+        pagador_cuit: texto(form.get('pagador_cuit')),
+      };
+      if (!nombrePagador || !cuit) {
+        return fail(400, {
+          error:
+            'Para pagar por alias indicá el nombre completo y un CUIT/CUIL válido de quien transfiere.',
+          ...datos,
+          ...recuerdo,
+        });
+      }
+      pagador = { nombre: nombrePagador, cuit };
+    }
 
     if (!datos.nombre || !EMAIL.test(datos.email) || !datos.telefono) {
       return fail(400, { error: 'Revisá nombre, email y teléfono.', ...datos });
@@ -86,7 +109,7 @@ export const actions = {
 
     let pedido;
     try {
-      pedido = await crearPedido({ datos, costoEnvio: 0, lineas, reservas, metodoPago });
+      pedido = await crearPedido({ datos, costoEnvio: 0, lineas, reservas, metodoPago, pagador });
     } catch (err) {
       if (err instanceof SinStockError) {
         return fail(409, {

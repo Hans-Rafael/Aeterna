@@ -20,10 +20,11 @@ const listaItems = (lines) =>
 
 /**
  * Mensaje para enviar el comprobante de una transferencia por alias.
- * @param {{ id: string, customer_name: string, total: number, lineas: { name: string, qty: number, price: number }[] }} pedido
+ * @param {{ id: string, customer_name: string, total: number, payer_name?: string | null, payer_cuit?: string | null, lineas: { name: string, qty: number, price: number }[] }} pedido
  * @param {{ alias: string, titular: string }} pago
+ * @param {string} [referencia] código de identificación / nº de comprobante de la transferencia
  */
-export function mensajeTransferencia(pedido, pago) {
+export function mensajeTransferencia(pedido, pago, referencia = '') {
   return [
     `¡Hola Aeterna! 🧼🕯️ Hice una transferencia por mi pedido #${pedido.id.slice(0, 8)}:`,
     '',
@@ -32,6 +33,11 @@ export function mensajeTransferencia(pedido, pago) {
     `Total: ${formatPrice(pedido.total)}`,
     `Alias: ${pago.alias} (${pago.titular})`,
     `Nombre: ${pedido.customer_name}`,
+    '',
+    'Datos de la transferencia:',
+    `• Titular de la cuenta de origen: ${pedido.payer_name ?? '-'}`,
+    `• CUIT/CUIL: ${pedido.payer_cuit ?? '-'}`,
+    `• Código de identificación (ID COELSA / Nº de comprobante): ${referencia.trim() || '(te lo paso con el comprobante)'}`,
     '',
     'Te adjunto el comprobante. ¿Coordinamos la entrega en Escobar?',
     '¡Gracias!',
