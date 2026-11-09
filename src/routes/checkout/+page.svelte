@@ -2,11 +2,14 @@
   import { untrack } from 'svelte';
   import { cart } from '#lib/cart.svelte.js';
   import { formatPrice } from '#lib/format.js';
+  import { LIMITES } from '#lib/validar.js';
 
   /** @type {{ form: any }} */
   let { form } = $props();
 
   // El servidor recalcula precios desde la base; acá solo mandamos slug y cantidad.
+  const PATRON_TELEFONO = String.raw`\+?[0-9 \(\)\-]{8,20}`;
+  const PATRON_CUIT = String.raw`[0-9 \-]{11,14}`;
   let metodo = $state(untrack(() => form?.metodo_pago ?? 'mercadopago'));
   let carrito = $derived(JSON.stringify(cart.items.map((i) => ({ slug: i.slug, qty: i.qty }))));
 </script>
@@ -40,6 +43,10 @@
           <input
             required
             name="nombre"
+            minlength={LIMITES.nombreMin}
+            maxlength={LIMITES.nombreMax}
+            pattern=".*\S\s+\S.*"
+            title="Escribí nombre y apellido"
             value={form?.nombre ?? ''}
             class="field"
             autocomplete="name"
@@ -51,6 +58,7 @@
             required={metodo !== 'alias'}
             type="email"
             name="email"
+            maxlength={LIMITES.emailMax}
             value={form?.email ?? ''}
             class="field"
             autocomplete="email"
@@ -62,6 +70,12 @@
             required
             type="tel"
             name="telefono"
+            inputmode="tel"
+            minlength="8"
+            maxlength={LIMITES.telefonoMax}
+            pattern={PATRON_TELEFONO}
+            title="Solo números (8 a 15 dígitos). Ej: 11 2345-6789"
+            placeholder="11 2345-6789"
             value={form?.telefono ?? ''}
             class="field"
             autocomplete="tel"
@@ -118,6 +132,10 @@
               <input
                 required
                 name="pagador_nombre"
+                minlength={LIMITES.nombreMin}
+                maxlength={LIMITES.nombreMax}
+                pattern=".*\S\s+\S.*"
+                title="Escribí nombre y apellido completos"
                 value={form?.pagador_nombre ?? ''}
                 class="field"
                 autocomplete="off"
@@ -129,6 +147,9 @@
                 required
                 name="pagador_cuit"
                 inputmode="numeric"
+                maxlength={LIMITES.cuitMax}
+                pattern={PATRON_CUIT}
+                title="11 dígitos, con o sin guiones"
                 placeholder="20-12345678-9"
                 value={form?.pagador_cuit ?? ''}
                 class="field"

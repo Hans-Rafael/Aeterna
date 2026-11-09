@@ -1,5 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { normalizarCuit } from '#lib/cuit.js';
+import { errorEmail, errorNombre, errorTelefono } from '#lib/validar.js';
 import { MINUTOS_RESERVA } from '#lib/envio.js';
 import { getActiveProducts } from '#lib/server/catalog.js';
 import { crearPreferencia } from '#lib/server/mercadopago.js';
@@ -10,7 +11,6 @@ import {
   vencerPedidosViejos,
 } from '#lib/server/orders.js';
 
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_QTY = 99;
 
 /** @param {FormDataEntryValue | null} valor */
@@ -43,29 +43,28 @@ export const actions = {
         pagador_nombre: nombrePagador,
         pagador_cuit: texto(form.get('pagador_cuit')),
       };
-      if (!nombrePagador || !cuit) {
-        return fail(400, {
-          error:
-            'Para pagar por alias indicá el nombre completo y un CUIT/CUIL válido de quien transfiere.',
-          ...datos,
-          ...recuerdo,
-        });
+      const errorPagador =
+        (errorNombre(nombrePagador) &&
+          `El nombre del titular de la cuenta ${errorNombre(nombrePagador)}.`) ||
+        (!cuit && 'El CUIT/CUIL del titular no es válido (11 dígitos, ej. 20-12345678-9).') ||
+        null;
+      if (errorPagador || !cuit) {
+        return fail(400, { error: errorPagador, ...datos, ...recuerdo });
       }
       pagador = { nombre: nombrePagador, cuit };
     }
 
     // El teléfono es obligatorio siempre (la entrega se coordina por WhatsApp).
     // El email solo es obligatorio con Mercado Pago; con alias es opcional pero, si se pone, válido.
-    const emailOk = datos.email ? EMAIL.test(datos.email) : metodoPago === 'alias';
-    if (!datos.nombre || !emailOk || !datos.telefono) {
-      return fail(400, {
-        error:
-          metodoPago === 'alias'
-            ? 'Revisá nombre, teléfono y email (si lo completás).'
-            : 'Revisá nombre, email y teléfono.',
-        ...datos,
-        metodo_pago: metodoPago,
-      });
+    const errorDatos =
+      (errorNombre(datos.nombre) && `El nombre ${errorNombre(datos.nombre)}.`) ||
+      (errorTelefono(datos.telefono) && `El teléfono ${errorTelefono(datos.telefono)}.`) ||
+      (datos.email || metodoPago === 'mercadopago'
+        ? errorEmail(datos.email) && `El email ${errorEmail(datos.email)}.`
+        : null) ||
+      null;
+    if (errorDatos) {
+      return fail(400, { error: errorDatos, ...datos, metodo_pago: metodoPago });
     }
 
     // El carrito llega como lista de { slug, qty }. El precio NUNCA viene del navegador.
