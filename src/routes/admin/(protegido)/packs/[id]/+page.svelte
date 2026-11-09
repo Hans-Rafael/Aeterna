@@ -23,6 +23,7 @@
     componentes={data.componentes}
     candidatos={data.candidatos}
     imageUrl={data.imageUrl}
+    extras={data.extras}
     error={form?.error ?? null}
   />
 </section>

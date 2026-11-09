@@ -134,3 +134,47 @@ export async function createProduct(fields) {
   if (error) throw error;
   return data.id;
 }
+
+/** Fotos por producto: 1 principal + 3 de contexto. */
+export const MAX_FOTOS = 4;
+export const MAX_EXTRAS = MAX_FOTOS - 1;
+const MAX_FOTO_BYTES = 5 * 1024 * 1024;
+const TIPOS_FOTO = ['image/jpeg', 'image/png', 'image/webp'];
+
+/**
+ * Aplica a `cambios` las fotos de contexto del formulario: quita las marcadas, suma las nuevas
+ * (hasta MAX_EXTRAS) y resuelve "hacer principal". Devuelve un mensaje de error o null.
+ * @param {FormData} form
+ * @param {{ slug: string, image_path: string, extra_images: string[] | null }} product
+ * @param {Record<string, unknown>} cambios
+ * @returns {Promise<string | null>}
+ */
+export async function aplicarFotosExtra(form, product, cambios) {
+  const quitar = new Set(form.getAll('quitar_extra').map(String));
+  const extras = (product.extra_images ?? []).filter((path) => !quitar.has(path));
+  const nuevas = /** @type {File[]} */ (
+    form.getAll('fotos_extra').filter((f) => f instanceof File && f.size > 0)
+  );
+  for (const f of nuevas) {
+    if (!TIPOS_FOTO.includes(f.type)) return 'Las fotos deben ser JPG, PNG o WebP.';
+    if (f.size > MAX_FOTO_BYTES) return `"${f.name}" supera los 5 MB.`;
+  }
+  if (nuevas.length && extras.length + nuevas.length > MAX_EXTRAS) {
+    return `Máximo ${MAX_FOTOS} fotos por producto (1 principal + ${MAX_EXTRAS} de contexto).`;
+  }
+  for (const f of nuevas) extras.push(await uploadProductImage(f, product.slug));
+
+  // "Hacer principal": la elegida pasa a principal y la anterior ocupa su lugar entre las extras.
+  const principal = form
+    .getAll('hacer_principal')
+    .map(String)
+    .find((path) => !cambios.image_path && extras.includes(path));
+  if (principal) {
+    const resto = extras.filter((path) => path !== principal);
+    cambios.image_path = principal;
+    cambios.extra_images = product.image_path ? [product.image_path, ...resto] : resto;
+  } else {
+    cambios.extra_images = extras;
+  }
+  return null;
+}

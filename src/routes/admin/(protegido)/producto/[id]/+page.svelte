@@ -64,7 +64,9 @@
           </ul>
         {/if}
         <label class="block">
-          <span class="text-cacao/70">Agregar fotos (JPG, PNG o WebP, máx. 5 MB c/u, hasta 6)</span>
+          <span class="text-cacao/70"
+            >Agregar fotos (JPG, PNG o WebP, máx. 5 MB c/u). Total: hasta 4 fotos con la principal.</span
+          >
           <input
             type="file"
             name="fotos_extra"

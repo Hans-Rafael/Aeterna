@@ -1,5 +1,6 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import {
+  aplicarFotosExtra,
   getPackComponentes,
   getProductById,
   guardarPack,
@@ -17,6 +18,10 @@ export async function load({ params }) {
     componentes: await getPackComponentes(params.id),
     candidatos: await listComponentesPosibles(),
     imageUrl: publicImageUrl(pack.image_path),
+    extras: (pack.extra_images ?? []).map((/** @type {string} */ path) => ({
+      path,
+      url: publicImageUrl(path),
+    })),
   };
 }
 
@@ -29,6 +34,9 @@ export const actions = {
     const form = await request.formData();
     const resultado = await leerPackForm(form, { requireFoto: false, slug: pack.slug });
     if (resultado.error) return fail(400, { error: resultado.error });
+
+    const errorFotos = await aplicarFotosExtra(form, pack, resultado.fields);
+    if (errorFotos) return fail(400, { error: errorFotos });
 
     await guardarPack({
       id: params.id,
