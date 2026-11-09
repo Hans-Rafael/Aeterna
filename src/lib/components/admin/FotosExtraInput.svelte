@@ -57,7 +57,7 @@
     {/if}
     {#if archivos.length < max}
       <label
-        class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-cacao/30 bg-white px-5 py-2.5 text-sm text-cacao transition hover:border-rosa-oscuro hover:text-rosa-oscuro focus-within:outline-2 focus-within:outline-rosa-oscuro"
+        class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-rosa-oscuro px-6 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-cacao focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-cacao"
       >
         <span aria-hidden="true">＋</span> Agregar fotos
         <input
