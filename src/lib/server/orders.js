@@ -41,7 +41,7 @@ export async function crearPedido({
       total: productos + costoEnvio,
       shipping_cost: costoEnvio,
       customer_name: datos.nombre,
-      customer_email: datos.email,
+      customer_email: datos.email || null,
       customer_phone: datos.telefono,
       delivery_type: datos.entrega,
       address: envio

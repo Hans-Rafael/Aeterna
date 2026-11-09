@@ -46,9 +46,9 @@
           />
         </label>
         <label class="block text-sm">
-          <span class="text-cacao/70">Email</span>
+          <span class="text-cacao/70">Email{metodo === 'alias' ? ' (opcional)' : ''}</span>
           <input
-            required
+            required={metodo !== 'alias'}
             type="email"
             name="email"
             value={form?.email ?? ''}

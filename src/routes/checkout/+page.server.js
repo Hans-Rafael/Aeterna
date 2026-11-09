@@ -54,8 +54,18 @@ export const actions = {
       pagador = { nombre: nombrePagador, cuit };
     }
 
-    if (!datos.nombre || !EMAIL.test(datos.email) || !datos.telefono) {
-      return fail(400, { error: 'Revisá nombre, email y teléfono.', ...datos });
+    // El teléfono es obligatorio siempre (la entrega se coordina por WhatsApp).
+    // El email solo es obligatorio con Mercado Pago; con alias es opcional pero, si se pone, válido.
+    const emailOk = datos.email ? EMAIL.test(datos.email) : metodoPago === 'alias';
+    if (!datos.nombre || !emailOk || !datos.telefono) {
+      return fail(400, {
+        error:
+          metodoPago === 'alias'
+            ? 'Revisá nombre, teléfono y email (si lo completás).'
+            : 'Revisá nombre, email y teléfono.',
+        ...datos,
+        metodo_pago: metodoPago,
+      });
     }
 
     // El carrito llega como lista de { slug, qty }. El precio NUNCA viene del navegador.
