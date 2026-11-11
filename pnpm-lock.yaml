@@ -33,6 +33,9 @@ importers:
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
+      cookie:
+        specifier: ^2.0.1
+        version: 2.0.1
       eslint:
         specifier: ^10.14.0
         version: 10.14.0(jiti@2.7.0)

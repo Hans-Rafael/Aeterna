@@ -55,3 +55,36 @@ export function isValidSession(token, username, secret) {
 export function randomSecret() {
   return randomBytes(32).toString('hex');
 }
+
+const MAX_INTENTOS = 5;
+const VENTANA_MS = 15 * 60 * 1000;
+/** @type {Map<string, { fallos: number, desde: number }>} */
+const intentos = new Map();
+
+/**
+ * Límite de intentos de login por IP (en memoria; en serverless es por instancia).
+ * @param {string} ip
+ * @returns {number} segundos restantes de bloqueo, o 0 si puede intentar
+ */
+export function segundosBloqueado(ip) {
+  const r = intentos.get(ip);
+  if (!r) return 0;
+  const restante = r.desde + VENTANA_MS - Date.now();
+  if (restante <= 0) {
+    intentos.delete(ip);
+    return 0;
+  }
+  return r.fallos >= MAX_INTENTOS ? Math.ceil(restante / 1000) : 0;
+}
+
+/** @param {string} ip */
+export function registrarFallo(ip) {
+  const r = intentos.get(ip);
+  if (!r || r.desde + VENTANA_MS <= Date.now()) intentos.set(ip, { fallos: 1, desde: Date.now() });
+  else r.fallos++;
+}
+
+/** @param {string} ip */
+export function limpiarFallos(ip) {
+  intentos.delete(ip);
+}
