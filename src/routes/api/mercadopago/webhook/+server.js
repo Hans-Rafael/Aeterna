@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { obtenerPago } from '#lib/server/mercadopago.js';
+import { firmaWebhookValida, obtenerPago } from '#lib/server/mercadopago.js';
 import { aplicarPago } from '#lib/server/orders.js';
 
 /**
@@ -7,6 +7,20 @@ import { aplicarPago } from '#lib/server/orders.js';
  * No confiamos en el contenido del aviso: consultamos el pago directo a la API.
  */
 export async function POST({ request, url }) {
+  // Firma: se exige si hay MP_WEBHOOK_SECRET (Mercado Pago > Tus integraciones > Webhooks).
+  const secret = process.env.MP_WEBHOOK_SECRET;
+  if (secret) {
+    const valida = firmaWebhookValida({
+      xSignature: request.headers.get('x-signature'),
+      xRequestId: request.headers.get('x-request-id'),
+      dataId: url.searchParams.get('data.id'),
+      secret,
+    });
+    if (!valida) return json({ ok: false, error: 'firma-invalida' }, { status: 401 });
+  } else {
+    console.warn('[mp] MP_WEBHOOK_SECRET sin configurar: webhook sin verificar firma');
+  }
+
   /** @type {any} */
   let body = {};
   try {

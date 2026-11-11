@@ -1,3 +1,4 @@
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import { MercadoPagoConfig, Payment, Preference } from 'mercadopago';
 
 function cliente() {
@@ -44,4 +45,33 @@ export async function crearPreferencia({ pedidoId, items, baseUrl, notificationU
 /** @param {string | number} id */
 export async function obtenerPago(id) {
   return new Payment(cliente()).get({ id });
+}
+
+/**
+ * Verifica la firma `x-signature` de un webhook de Mercado Pago.
+ * Manifiesto firmado: `id:<data.id>;request-id:<x-request-id>;ts:<ts>;` con HMAC SHA256.
+ * @param {{ xSignature: string | null, xRequestId: string | null, dataId: string | null, secret: string }} opts
+ */
+export function firmaWebhookValida({ xSignature, xRequestId, dataId, secret }) {
+  if (!xSignature) return false;
+  const partes = Object.fromEntries(
+    xSignature.split(',').map((p) => {
+      const [k, ...v] = p.trim().split('=');
+      return [k, v.join('=')];
+    })
+  );
+  const { ts, v1 } = partes;
+  if (!ts || !v1) return false;
+
+  // Mercado Pago pide el id en minúsculas cuando es alfanumérico.
+  const id = dataId ? dataId.toLowerCase() : '';
+  let manifiesto = '';
+  if (id) manifiesto += `id:${id};`;
+  if (xRequestId) manifiesto += `request-id:${xRequestId};`;
+  manifiesto += `ts:${ts};`;
+
+  const esperada = createHmac('sha256', secret).update(manifiesto).digest('hex');
+  const a = Buffer.from(v1);
+  const b = Buffer.from(esperada);
+  return a.length === b.length && timingSafeEqual(a, b);
 }
